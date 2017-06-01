@@ -123,7 +123,8 @@ var Liquid = (function () {
 		packageBroadcastMessages: true,
 		host: 'localhost',
 		signalingRoute: 'signaling',
-		port:80
+		port:80,
+		relay: false
 	}
 
 	/**
@@ -1195,7 +1196,7 @@ var Liquid = (function () {
 			}
 
 			// If webRTC is not configured
-			if(!__config.signalingServer) {
+			if(__config.relay) {
 				__socket.emit('relay', message)
 				return
 			}

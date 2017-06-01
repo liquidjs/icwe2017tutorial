@@ -384,6 +384,10 @@ const strategies = {
 
 		receiveMessage: function(message){
 			console.error(`TODO: received strategy message: ${message}`)
+		},
+
+		disconnect: function(){
+			
 		}
 	}
 }
