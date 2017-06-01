@@ -1,0 +1,52 @@
+doctype html
+html
+	head
+
+		script(src="fetch/fetch.js")
+		script(src="webcomponentsjs/webcomponents-lite.min.js")
+		<link rel="import" href="polymer/polymer.html">
+
+		
+
+		script.
+			var liquidConfig = !{JSON.stringify(client)}
+
+		script(src="/components/webrtc/peer.js")
+		
+
+		title.
+			Liquid.js Framework Demo
+
+		meta(name="viewport", content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+
+		style.
+			html,body {
+				height: 100%;
+				margin: 0;
+				font-family: 'RobotoDraft', sans-serif;
+				position: relative;
+				-webkit-user-select: none;
+				background-repeat: repeat-y;
+			}
+			.draggableSpace > * {
+				position: absolute;
+			}
+
+			#mainToolbar {
+				background: #444;
+			}
+
+		style(is="custom-style").
+			:root {
+				--paper-input-container-color: white;
+				--paper-input-container-input-color: white;
+				--paper-input-container-focus-color: white;
+			}
+
+	body(unresolved onload="load()")
+		script(src="corescripts/liquidAPI.js")
+
+		script(src="scripts/application.js")
+
+		script(src="scripts/photoboothdemo.js")
+		script(src="scripts/filters.js")

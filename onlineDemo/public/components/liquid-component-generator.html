@@ -1,0 +1,162 @@
+<link rel="import" href="/paper-input/paper-input.html">
+<link rel="import" href="/paper-toast/paper-toast.html">
+
+<dom-module id="liquid-component-generator">
+  <style is="custom-style">
+      :root {
+          /* width: 600px; */
+          margin: auto;
+          margin-top: 20px;
+      }
+
+      .containerBox {
+        border: 1px solid black;
+      }
+
+      paper-toolbar {
+        @apply(--layout-around-justified);
+      }
+
+      paper-input {
+        @apply(--layout-self-end);
+      }
+
+      paper-toast {
+        width: 60%;
+      }
+
+      .toast-button {
+        text-transform: none;
+        color: #eeff41;
+      }
+
+      .toast-black {
+        --paper-toast-color: #f1f1f1;
+      }
+
+      .toast-red {
+        --paper-toast-color: #f1f1f1;
+        border: 2px solid red;
+      }
+
+      .toast-yellow {
+        --paper-toast-color: #f1f1f1;
+        border: 2px solid yellow;
+      }
+
+      .toast-green {
+        --paper-toast-color: #f1f1f1;
+        border: 2px solid green;
+      }
+  </style>
+  <template>   
+    <div class="containerBox">
+      <paper-toolbar>
+        <div>Editor</div>
+      </paper-toolbar>
+    
+      <div class="editor" id="codeMirrorEditor"></div>
+
+      <paper-toolbar> 
+        <paper-button on-click="evaluateElement">Evaluate Element</paper-button>
+        <paper-tab></paper-tab>
+        <paper-button on-click="createComponent">Create Element</paper-button>
+        <paper-input id="componentName"></paper-input>
+      </paper-toolbar>
+
+      <paper-toast id="toast" duration="0" text="" class$="{{toastClass}}">
+        <paper-button onclick="toast.toggle()" class="toast-button">Close</paper-button>
+      </paper-toast>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-component-generator',
+
+      behaviors: [LiquidBehavior],
+
+      properties: {
+        code: {
+          type: String,
+          value: '',
+          liquid: true
+        },
+
+        toastClass: {
+          type: String,
+          value: ''
+        }
+      },
+
+      attached: function() {
+        this.editor = CodeMirror(this.$.codeMirrorEditor, {
+          value: "<dom-module id='liquid-component-yourname'>\n\t<template>\n\t\t\n\t\t<paper-input value={{test}}></paper-input>\n\t\t<!-- Add your HTML here -->\n\t\t\n\t<\/template>\n\t<script>\n\t\tPolymer({\n\t\t\tis: 'liquid-component-yourname',\n\t\t\tbehaviors: [LiquidBehavior],\n\t\t\t\n\t\t\tproperties: {\n\t\t\t\ttest: {type: String, value: 'Hello World', liquid: true}\n\t\t\t\t// Add your properties here\n\t\t\t},\n\t\t\t\n\t\t\t// Add your code here\n\t\t\t\n\t\t});\n\t<\/script>\n<\/dom-module>",
+          mode: "text/html",
+          indentUnit: 2,
+          smartIndent: true,
+          tabSize: 2,
+          lineNumbers: true
+        });
+
+        this.editor.markText({line:0,ch:33},{line:0,ch:41},{css:"color:red"});
+        this.editor.markText({line:3,ch:0},{line:5,ch:0},{css:"color:red"});
+        this.editor.markText({line:9,ch:25},{line:9,ch:33},{css:"color:red"});
+        this.editor.markText({line:13,ch:0},{line:15,ch:0},{css:"color:red"});
+        this.editor.markText({line:16,ch:0},{line:18,ch:0},{css:"color:red"});
+      },
+
+      evaluateElement: function() {
+        let text = this.editor.getValue()
+
+        let componentNameRegExp = /(?:'liquid-component-)([a-zA-Z]+)(?:')/gi
+        let name = undefined
+        let counter = 0
+        let unique = true
+        while ((match = componentNameRegExp.exec(text)) != null) {
+          if(!name) {
+            name = match[1]
+          } else {
+            if(name != match[1]) {
+              unique = false
+            }
+          }
+          counter++
+        }
+
+        if(unique && counter >= 2) {
+          this.$.componentName.value = name
+
+          let component = {
+            relUrl: 'components/liquid-component-' + name + '.html',
+            ext: 'html'
+          }
+
+          Liquid.createImportTag(text, component, '__peer')
+          .then(() => {
+            this.$.toast.close()
+            this.toastClass = 'toast-green'
+            this.$.toast.text = "Loaded component " + name
+            this.$.toast.open()
+          })
+          .catch(() => {
+            this.$.toast.close()
+            this.toastClass = 'toast-yellow'
+            this.$.toast.text = "Component is already loaded: " + name
+            this.$.toast.open()
+          })
+        } else {
+          this.$.toast.close()
+          this.toastClass = 'toast-red'
+          this.$.toast.text = "Name mismatch: check that you wrote the same name as the dom-module id and as the Polymer id."
+          this.$.toast.open()
+        }
+      },
+
+      createComponent: function() {
+        if(this.$.componentName.value) {
+          Liquid.createComponent(this.$.componentName.value, document.querySelector('body'), {'liquidui': 'spatial1'})
+        }
+      }
+    });
+  </script>
+</dom-module>

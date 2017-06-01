@@ -1,0 +1,72 @@
+doctype html
+html
+	head
+		<link href="/css/cards.css" rel="stylesheet" type="text/css">
+
+		script(src="fetch/fetch.js")
+		script(src="webcomponentsjs/webcomponents-lite.min.js")
+		<link rel="import" href="polymer/polymer.html">
+		<link rel="import" href="../paper-dialog/paper-dialog.html">
+		<link rel="import" href="../paper-button/paper-button.html">
+
+		style(is="custom-style").
+			paper-dialog {
+				border: 2px solid;
+				border-color: ##f44336;
+				background-color: #ffebee;
+				color: #f44336;
+			}
+
+		script.
+			var liquidConfig = !{JSON.stringify(client)}
+
+		script(src="/components/webrtc/peer.js")
+		
+		title.
+			Table
+
+		meta(name="viewport", content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+
+	body(unresolved onload="load()", class="deck")
+		div(id="container")
+
+		div(id="discard", class="cardPlaceholder")
+		div(id="pile", class="cardPlaceholder")
+
+		div(class="label labelLeft").
+			1
+		div(class="label labelTop").
+			2
+		div(class="label labelRight").
+			3
+		div(class="label labelBottom").
+			4
+
+		paper-dialog(id="dialog")
+			h2.
+				Warning
+			p.
+				This is just a demo, you can connect only one single deck at the time.
+
+		script(src="corescripts/liquidAPI.js")
+
+		script(src="scripts/deck.js")
+
+		<!-- Piwik -->
+		script(type="text/javascript").
+			var _paq = _paq || [];
+			// tracker methods like "setCustomDimension" should be called before "trackPageView"
+			_paq.push(["setDomains", ["*.liquid.inf.usi.ch","*.liquid.inf.unisi.ch","*.liquid.inf.usi.ch"]]);
+			_paq.push(['trackPageView']);
+			_paq.push(['enableLinkTracking']);
+			(function() {
+			var u="//design.inf.unisi.ch/piwik/";
+			_paq.push(['setTrackerUrl', u+'piwik.php']);
+			_paq.push(['setSiteId', '8']);
+			var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+			g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+			})();
+
+		noscript.
+			<p><img src="//design.inf.unisi.ch/piwik/piwik.php?idsite=8&rec=1" style="border:0;" alt="" /></p></noscript>
+		<!-- End Piwik Code -->

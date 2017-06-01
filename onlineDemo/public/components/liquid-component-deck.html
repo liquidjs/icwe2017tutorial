@@ -1,0 +1,94 @@
+<link rel="import" href="/polymer/polymer.html">
+
+<dom-module id="liquid-component-deck">
+  <template>
+    <style >
+      :host {
+        width: 3.875rem;
+        height: 5.5rem;
+      }
+
+      #deck {
+        position: absolute;
+      }
+
+      #deck .card {
+        cursor: hand;
+      }
+
+      .pos1 {
+        left: 0;
+        top: 0;
+      }
+
+      .pos2 {
+        left: 0;
+        top: -0.25rem;
+      }
+
+      .pos3 {
+        left: 0;
+        top: -0.5rem;
+      }
+    </style>
+    <div id="deck" on-mousedown="_createCard" on-touchstart="_crateCard">
+      <div class="card pos1">
+        <div class="back"></div>
+      </div>
+      <div class="card pos2">
+        <div class="back"></div>
+      </div>
+      <div class="card pos3">
+        <div class="back"></div>
+      </div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-component-deck',
+      
+      behaviors: [LiquidBehavior],
+
+      properties: {
+        decksNumber: {
+          type: Number,
+          value: 8
+        },
+
+        deck: {
+          type: Array,
+          value: function(){return []}
+        }
+      },
+
+      attached: function() {
+        this.deck = []
+        for(let d = 0; d < this.decksNumber; d++){
+          for(let i = 0; i < 4; i++){
+            let suit = (i == 0) ? 'hearts' : (i == 1) ? 'diamonds' : (i == 2) ? 'clubs' : 'spades' 
+
+            for(let value = 1; value <= 13; value++) {
+              this.deck.push(`card ${suit} rank${value}`)
+            }
+          }
+        }
+        this._shuffle(this.deck)
+      },
+
+      _createCard: function() {
+        let card = this.deck.pop()
+        Liquid.createComponent('card', document.querySelector('#container'), {bindings: {
+          view: 'back',
+          card: card
+        }})
+      },
+
+      _shuffle: function(a) {
+        for (let i = a.length; i; i--) {
+          let j = Math.floor(Math.random() * i);
+          [a[i - 1], a[j]] = [a[j], a[i - 1]];
+        }
+      }
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,963 @@
+<script>
+    LiquidBehavior = {
+
+      properties: {
+        liquidui:{
+          type: String,
+          notify: true,
+          value: ''
+        },
+
+        liquidname: {
+          type: String,
+          value: ""
+        },
+
+        __liquiduiComponent: {
+          type: Object,
+          value: function() { return undefined }
+        },
+
+        __liquidComponentUrl: {
+          type: Object,
+          notify: true
+        },
+
+        __liquidVariablesList: {
+          type: Object,
+          value: function(){return {};}
+        },
+
+        __liquidRegisteredPrimitivesVariables: {
+          type: Array,
+          value: function() { return []; },
+          notify: true,
+          observer: '_changedLiquidPrimitives'
+        },
+
+        __liquidRegisteredArrayVariables: {
+          type: Array,
+          value: function() { return []; },
+          notify: true,
+          observer: '_changedLiquidArrays'
+        },
+
+        __liquidRegisteredObjectVariables: {
+          type: Array,
+          value: function() { return []; },
+          notify: true,
+          observer: '_changedLiquidObjects'
+        },
+
+        __componentYs: {
+          type: Object,
+          value: function() {return {};},
+          notify: true
+        },
+
+        __emitterYs: {
+          type: Object,
+          value: function() {return {};},
+          notify: true
+        },
+
+        __variablePairs: {
+          type: Object,
+          value: function() {return {};},
+          notify: true
+        },
+
+        __isInitialised: {
+          type: Boolean,
+          notify: true,
+          value: function() {
+            return {
+              all: false,
+              roomToken: false,
+              yjs: false
+            }
+          }
+        },
+
+        __stackedOperations: {
+          type: Array,
+          value: function() {return [];}
+        },
+
+        __roomToken: {
+          type: Number,
+        },
+
+        __observerReferences: {
+          type: Object,
+          value: function(){return {}}
+        }
+      },
+
+      ready: function() {
+        /*
+         * Start performance utility functions
+         */
+
+        // window.performanceCounter = 0
+        // window.dumpPerformanceMeasures = function () {
+        //   var entries = window.performance.getEntriesByType('measure')
+        //   var s = ""
+        //   for (var i=0; i < entries.length; i++) {
+        //     s += entries[i].duration + "\n"
+        //   }
+        //   console.log(s)
+        // }
+
+        /*
+         * End performance utility functions
+         */
+      },
+
+      attached: function() {
+        Liquid.registerRoomToken(this)
+        this._registerLiquidHook()
+        this._registerToContainer(this)
+        this._loadUI()
+      },
+
+      detached: function() {
+        const variables = this.getLiquidVariablesList()
+        for(const variable in variables) {
+          let liquidURL = {
+            device: this.__liquidComponentUrl.device,
+            componentRef: this.__liquidComponentUrl.componentRef,
+            type: this.__liquidComponentUrl.type,
+            variable: variable
+          }
+          this.__emitterYs[variable].emitEvent('unregister', [liquidURL])
+          // this.__emitterYs[variable].emitEvent('bind-disconnect', [liquidURL])
+        }
+      },
+
+      _registerLiquidHook: function() {
+        var hooks = Polymer.dom(this.root).querySelectorAll('[liquid-hook]')
+
+        for(var i = 0; i < hooks.length; i++) {
+          var hook = hooks[i]
+          var label = hooks[i].getAttribute('liquid-hook')
+
+          Liquid.createHook(hook, label)
+        }
+      },
+
+      _getComponentSnapshot: function() {
+        var snapshot = {
+          type: this.__liquidComponentUrl.type,
+          options: {
+            liquidui: this.liquidui,
+            liquidname: this.liquidname
+          },
+          variables: this.getLiquidVariablesValue()
+        }
+
+        // for(var i in this.__liquidVariablesList) {
+        //   snapshot.variables[i] = this._getVariableSnapshot(i)
+        // }
+
+        return snapshot
+      },
+
+      // _getVariableSnapshot: function(variableName) {
+      //   return {
+      //     name: variableName,
+      //     value: this.__data__[variableName]
+      //   }
+      // },
+
+      _isContainerComponent: function() {
+        return false
+      },
+
+      _notifyAddComponent: function() {},
+
+      _registerToContainer: function(component) {
+        var node = this.parentNode
+
+        while(node != undefined) {
+          if(node._isContainerComponent && node._isContainerComponent()) {
+
+            var elementId = this.parentNode.id
+            var liquidui = this.liquidui
+
+            node._notifyAddComponent(this.__liquidComponentUrl, elementId, liquidui)
+            break;
+          }
+
+          node = node.parentNode
+        }
+      },
+
+      _getLiquidChildComponents: function() {
+        return {
+          default: [],
+          added: []
+        }
+      },
+
+      _isInsideLiquidContainer: function() {
+        var node = this.parentNode
+        var isContained = false
+
+        while(node != undefined && isContained == false) {
+          if(node._isContainerComponent) {
+            isContained = node._isContainerComponent()
+          }
+          node = node.parentNode
+        }
+
+        return isContained
+      },
+
+      _scanRegisterVariable: function() {
+        var self = this
+        var max = 0
+        for(var i in this.properties) {
+          max++
+        }
+
+        if(Object.keys(this.properties).length == 0) {
+          this._setInitialisation('yjs', true)
+        }
+
+         // Object.observe(self.__data__, self._liquidLocalChangePrimitive.bind(self))
+        var proxyPrimitiveHandler = {
+          set: function(target, propKey, value, receiver, pim) {
+            // window.performanceCounter++
+            // window.performance.mark('start' + window.performanceCounter)
+
+            if(self.__liquidRegisteredPrimitivesVariables.indexOf(propKey) != -1) {
+              var oldValue = target[propKey]
+
+              if(oldValue != value) {
+                Reflect.set(target, propKey, value, receiver)
+                if(value != self.__componentYs[propKey].share.state.get(propKey)) {
+                  self.__componentYs[propKey].share.state.set(propKey, value)
+                }
+                // window.performance.mark('end' + window.performanceCounter)
+                // window.performance.measure('measure' + window.performanceCounter, 'start' + window.performanceCounter, 'end' + window.performanceCounter)
+                return
+              }
+            } else {
+              Reflect.set(target, propKey, value, receiver)
+              return true
+            }
+            // window.performance.mark('end' + window.performanceCounter)
+            // window.performance.measure('measure' + window.performanceCounter, 'start' + window.performanceCounter, 'end' + window.performanceCounter)
+          }
+        }
+
+        var counter = 0
+        for(var name in this.properties) {
+          var variable = this.properties[name]
+          if(variable.liquid) {
+            this.liquidRegisterVariable(name, variable.liquid, variable.type, function(variableType) {
+              counter++
+              if(counter == max) {
+                self.__data__ = new Proxy(self.__data__, proxyPrimitiveHandler)
+                self._setInitialisation('yjs', true)
+              }
+            })
+          } else {
+            counter++
+
+            if(counter == max) {
+              self.__data__ = new Proxy(self.__data__, proxyPrimitiveHandler)
+              self._setInitialisation('yjs', true)
+            }
+          }
+        }
+      },
+
+      // _setRoomToken: function(value) {
+      //   this.roomToken = value
+      //   this._setInitialisation('roomToken', true)
+      // },
+
+      // _setInitialisation: function(name, value) {
+      //   this.__isInitialised[name] = value
+      //   this._checkIntialisation()
+      // },
+
+      /* This is a diplicate?????
+       * There is an other _checkIntialisation that is called
+       * And this one is apparently never called...
+       */
+      // _checkIntialisation: function() {
+      //   if(this.__isInitialised.roomToken && !this.__isInitialised.yjs && !this.__isInitialised.all) {
+      //     Liquid.registerComponent(this, this.tagName.replace('LIQUID-COMPONENT-', '').toLocaleLowerCase(), {});
+      //     this._scanRegisterVariable();
+      //   }
+
+      //   if(this.__isInitialised.yjs && this.__isInitialised.roomToken && !this.__isInitialised.all) {
+      //     this.__isInitialised.all = true
+      //     this._emptyStack();
+      //   }
+      // },
+
+      liquidRegisterVariable: function(name, params, type, callback) {
+        var variableType = undefined
+
+        if(type === String) {
+          variableType = 'string'
+        } else if(type === Number) {
+          variableType = 'number'
+        } else if(type === Boolean) {
+          variableType = 'boolean'
+        } else if(type === Array) {
+          variableType = 'array'
+        } else if(type === Object) {
+          variableType = 'object'
+        } else {
+          variableType = typeof this[name]
+        }
+        variableType = variableType.toLowerCase();
+
+        this.__variablePairs[name] = {
+          incoming: [],
+          outgoing: []
+        }
+        this.__liquidVariablesList[name] = params;
+
+        // Javascript Types: String, Number, Boolean, Array, Object
+        if(variableType == 'object') {
+          // this.__liquidRegisteredObjectVariables.push(name)
+          this.push('__liquidRegisteredObjectVariables', name)
+          this._createYVariable(name, variableType, (y) => {
+            var yMap = this.__componentYs[name].share.state
+
+            // Recursive
+            for(var i in this[name]) {
+              this._observeSubObject([name, i], i, yMap, 'object')
+            }
+
+            this._setObserverOnObject(this[name], name, yMap, 'object')
+
+            if(callback)
+              callback(variableType)
+          })
+        } else if(Array.isArray(this[name]) || variableType == 'array') {
+          // this.__liquidRegisteredArrayVariables.push(name)
+          this.push('__liquidRegisteredArrayVariables', name)
+          this._createYVariable(name, variableType, (y) => {
+            var yMap = this.__componentYs[name].share.state
+
+            // for(var i = 0; i < self[name].length; i++) {
+            //   var indexName = i
+            // //   self.__componentYs[name].share.state.set(indexName, self[name][i])
+            // }
+            // // self.__componentYs[name].share.state.insert(0, self[name])
+
+            // Array.observe(self[name], self._liquidLocalChangeArray.bind(self, name))
+            // self.__componentYs[name].share.state.observe(self._onYChangeArray.bind(self, name))
+            for(var i = 0; i < this[name].length; i++) {
+              this._observeSubObject([name, i], i, yMap, 'array')
+            }
+
+            this._setObserverOnObject(this[name], name, yMap, 'array')
+
+            if(callback)
+              callback(variableType)
+          })
+        } else if(variableType == 'string' || variableType == 'number' || variableType == 'boolean') {
+          // this.__liquidRegisteredPrimitivesVariables.push(name)
+          this.push('__liquidRegisteredPrimitivesVariables', name)
+          this._createYVariable(name, variableType, (y) => {
+            this.__componentYs[name].share.state.set(name, this[name])
+            this.__componentYs[name].share.state.observe(this._onYChangePrimitive.bind(this, name))
+
+            if(callback)
+              callback(variableType)
+          })
+        } else {
+          console.log('invalid type')
+        }
+      },
+
+      _setObserverOnObject: function(obj, pathString, yMap, type) {
+        const observer = (type == 'object') ? '_liquidLocalChangeObject' : '_liquidLocalChangeArray'
+        const yObserver = (type == 'object') ? '_onYChangeObject' : '_onYChangeArray'
+        const caller = (type == 'object') ? Object : Array
+
+        const oldObserver = this.__observerReferences[pathString]
+        if(oldObserver) {
+          Object.unobserve(oldObserver.obj, oldObserver.handler)
+        }
+
+        const newObserver = this[observer].bind(this, pathString, yMap)
+        caller.observe(obj, newObserver)
+        this.__observerReferences[pathString] = {
+          obj: obj,
+          handler: newObserver
+        }
+
+        yMap.observe(this[yObserver].bind(this, pathString))
+      },
+
+      _observeSubObject: function(path, propertyString, yMap, typeString) {
+        var pathString = path.join('.') 
+        var property = this.get(pathString)
+        var propertyType = typeof property
+
+        var yObserver = '_onYChangeObject'
+        var parent = {
+          add: property,
+          type: Object,
+          propertyString: propertyString,
+          typeMethod: 'set',
+          localObserver: '_liquidLocalChangeObject'
+        }
+
+        if(typeString == 'array') {
+          parent = {
+            add: [property],
+            type: Array,
+            propertyString: Number(propertyString),
+            typeMethod: 'insert',
+            localObserver: '_liquidLocalChangeArray'
+          }
+        }
+        
+        switch(propertyType) {
+          case 'string':
+            yMap[parent.typeMethod](parent.propertyString, parent.add)
+            break;
+          case 'object':
+            // console.log('object or array')
+            var childType = Y.Map
+            var childTypeString = 'object'
+            if(property instanceof Array) {
+              childType = Y.Array
+              childTypeString = 'array'
+              yObserver = '_onYChangeArray'
+            }
+            if(typeString == 'array') {
+              childType = [childType]
+            }
+
+            yMap[parent.typeMethod](propertyString, childType)
+            var subMap = yMap.get(propertyString)
+
+            if(parent.type == 'array') {
+              for(var i = 0; i < property.length; i++) {
+                var newPath = path.slice()
+                newPath.push(i)
+                this._observeSubObject(newPath, i, subMap, childTypeString)
+              }
+            } else {
+              for(var i in property) {
+                var newPath = path.slice()
+                newPath.push(i)
+                this._observeSubObject(newPath, i, subMap, childTypeString)
+              }
+            }
+
+            this._setObserverOnObject(property, pathString, subMap, childTypeString)
+            break;
+          default:
+            break;
+        }
+      },
+
+      // liquidVariableChange: function(name, newValue) {
+
+      // },
+
+      getLiquidVariablesList: function() {
+        return this.__liquidVariablesList
+      },
+
+      getLiquidVariablesValue: function() {
+        var a = {}
+
+        for (var i in this.__liquidVariablesList) {
+          a[i] = this.__data__[i]
+        }
+
+        return a
+      },
+
+      getLiquidVariable: function(variableURL) {
+        return this.__data__[variableURL.variable]
+      },
+
+      getLiquidPairings: function() {
+        return this.__variablePairs
+      },
+
+      pairVariableOutgoing: function(fromURL, toURL) {
+        if(!this.__isInitialised.all) {
+          this.__stackedOperations.push({
+            operation: 'pairVariableOutgoing',
+            parameters: [Object.assign({}, fromURL), Object.assign({}, toURL)]
+          })
+
+          return
+        }
+
+        var variable = fromURL.variable
+
+        this.__variablePairs[variable].outgoing.push(toURL)
+        this.__emitterYs[variable].emitEvent('bind-connect', [toURL])
+      },
+
+      pairVariableIncoming: function(fromURL, toURL) {
+        if(!this.__isInitialised.all) {
+          this.__stackedOperations.push({
+            operation: 'pairVariableIncoming',
+            parameters: [Object.assign({}, fromURL), Object.assign({}, toURL)]
+          })
+
+          return
+        }
+        var variable = toURL.variable
+
+        this.__variablePairs[variable].incoming.push(fromURL)
+        this.__emitterYs[variable].emitEvent('bind-connect', [fromURL])
+      },
+
+      /**
+       * Unpair the variable corresponding to the given from-/to-URL
+       */
+      unpairVariable: function(variableURL) {
+        if(!this.__isInitialised.all) {
+          this.__stackedOperations.push({
+            operation: 'unpairVariable',
+            parameters: [Object.assign({}, variableURL)]
+          })
+
+          return
+        }
+        
+        /* look up the variable in and out and removed it. */
+        let variable = variableURL.variable
+        let vars = this.__variablePairs[variable]
+        // let incoming = vars.incoming
+        // let outgoing = vars.outgoing
+        let index = vars.incoming.findIndex((liquidURL) => {
+          if(liquidURL.device == variableURL.device &&
+          liquidURL.componentRef == variableURL.componentRef &&
+          liquidURL.type == variableURL.type &&
+          liquidURL.variable == variableURL.variable){
+            return true
+          } else {
+            return false
+          }
+        })
+        if (index >= 0){
+          vars.incoming.splice(index, 1)
+        }
+
+        index = vars.outgoing.findIndex((liquidURL) => {
+          if(liquidURL.device == variableURL.device &&
+          liquidURL.componentRef == variableURL.componentRef &&
+          liquidURL.type == variableURL.type &&
+          liquidURL.variable == variableURL.variable){
+            return true
+          } else {
+            return false
+          }
+        })
+        if (index >= 0) {
+          vars.outgoing.splice(index, 1)
+        }
+      },
+
+      // receiveYMessage: function(message) {
+      //   var variable = message.to.variable
+      //   console.log('LB:rcvYMsg: '+variable)
+      //   if (this.__emitterYs[variable]) {
+      //     console.log('emitEvent: y-message')
+      //     this.__emitterYs[variable].emitEvent('y-message', [message.from, message])
+      //   }else{
+      //     console.log('ERROR: emitter undefined!!!')
+      //   }
+      //   // this.__emitterYs[variable].emitEvent('y-message', [message.from, message])
+      // },
+      receiveYMessage: function(message) {
+        if(!this.__isInitialised.all) {
+          this.__stackedOperations.push({
+            operation: 'receiveYMessage',
+            parameters: [message]
+          })
+
+          return
+        }
+
+        var variable = message.to.variable
+        this.__emitterYs[variable].emitEvent('y-message', [message.from, message])
+      },
+
+      //Polymer Observer implementation
+      // _liquidLocalChangePrimitive: function(added, removed, changed, getOldValueFn) {
+      //   for(var i in changed) {
+      //     if(this.__liquidRegisteredPrimitivesVariables.indexOf(i) != -1) {
+      //       this.__componentYs[i].share.state.set(i, changed[i])
+      //     }
+      //   }
+      // },
+      _liquidLocalChangePrimitive: function(changes) {
+        // window.performanceCounter++
+        // window.performance.mark('start' + window.performanceCounter)
+        for(var i in changes) {
+          var variableName = changes[i].name
+          if(this.__liquidRegisteredPrimitivesVariables.indexOf(variableName) != -1) {
+            this.__componentYs[variableName].share.state.set(variableName, this[variableName])
+          }
+        }
+        // window.performance.mark('end' + window.performanceCounter)
+        // window.performance.
+        ('measure' + window.performanceCounter, 'start' + window.performanceCounter, 'end' + window.performanceCounter)
+      },
+
+      _liquidLocalChangeArray: function(pathString, yMap, changes) {
+        console.log(`Local array change ${pathString}`)
+        for(var i = 0; i < changes.length; i++) {
+          var type = changes[i].type
+          switch(type) {
+            case 'splice':
+              var addedCount = changes[i].addedCount
+              var removedCount = changes[i].removed.length
+              var index = changes[i].index
+              var currentArray =  changes[i].object
+              if(yMap.toArray().length != currentArray.length) {
+                if(addedCount) {
+                  var added = currentArray.slice(index, index + addedCount)
+                  yMap.insert(index, added)
+                }
+
+                if(removedCount) {
+                  yMap.delete(index, removedCount)
+                }
+              }
+              break;
+            case 'update':
+              if(changes[i].name != 'length') {
+                var index = Number(changes[i].name)
+                var newValue = changes[i].object[index]
+                yMap.delete(index, 1)
+                yMap.insert(index, [newValue])
+              }
+              break;
+            case 'add':
+              var index = Number(changes[i].name)
+              var localLength = this.get(pathString).length
+              var mapLength = yMap.toArray().length
+              if(localLength > mapLength) {
+                var toAddCount = localLength - mapLength 
+                var toAdd = new Array(toAddCount-1)
+                toAdd.push(changes[i].object[index])
+                yMap.insert(mapLength, toAdd)
+              }
+              break;
+            default:
+              console.warn(`Local array unhandled change ${type}`)
+              break;
+          }
+        }
+      },
+
+      _liquidLocalChangeObject: function(pathString, yMap, changes) {
+        for(var i in changes) {
+          switch(changes[i].type) {
+            case 'update':
+            case 'add':
+              var property = changes[i].name
+              var newValue = changes[i].object[property]
+              // console.log(`Local object update/add ${pathString} on property ${property} with value ${newValue}`)
+              yMap.set(property, newValue)
+              break;
+            default: 
+              console.warn(`Local object unhandled change ${changes[i].type}`)
+              break;
+          }
+        }
+      },              
+
+      _onYChangePrimitive: function(variableName, change) {
+        var value = change.value
+
+        if(this.variableName != value) {
+          this.set(variableName, value)
+        }
+      },
+
+      _onYChangeArray: function(pathString, change) {
+        console.log(`YArrayObserver on ${pathString} trigger`)
+        switch(change.type) {
+          case 'insert':
+            var index = change.index
+            var toInsert = change.values
+            var parameters = [pathString, index, 0].concat(toInsert)
+            if(change.object.toArray().length != this.get(pathString).length) {
+              this.splice.apply(this, parameters)
+            }
+            break;
+          case 'delete':
+            var index = change.index
+            var removeCount = change.values.length
+            if(change.object.toArray().length != this.get(pathString).length) {
+              this.splice.apply(this, [pathString, index, removeCount])
+            }
+            break;
+          default:
+            console.warn(`Y array unhandled change ${change.type}`)
+            break;
+        }
+        // var t = change.type
+        // var value = change.value
+        // var index = change.name
+
+        // if(t == 'update') {
+        //   if(value != this[variableName][index]) {
+        //     this.set(variableName + "." + index, value)
+        //   }
+        // } else if (t == 'add') {
+        //   if(value != this[variableName][index]) {
+        //     this.push(variableName, value)
+        //   }
+        // } else if (t == 'delete') {
+        //   if(this.__componentYs[variableName].share.state.keys().length != this[variableName].length) {
+        //     this.splice(variableName, index, 1)
+        //   }
+        // }
+      },
+
+      _onYChangeObject: function(pathString, change) {
+        var value = change.value
+        var path = change.name
+        if(path.split(".").length == 1) {
+          path = `${pathString}.${change.name}`
+        }
+        var oldValue = this.get(path)
+
+        // console.log(`YObjectObserver on path ${path} trigger`)
+        if(value.os && value.os.y) {
+          //If it's a new yjs object, then we must observe it, and all sub maps, furthermore we need to delete past object observers and create the new ones
+          this._setYObserverRecursive(path, value)
+        } else if(oldValue != value) {
+          this.set(path, value)
+        }
+      },
+
+      _liquidRemotelyChangePrimitive: function(yEvent) {
+        for(var i = 0; i < yEvent.length; i++) {
+          if(yEvent[i].type == 'update') {
+
+          }
+        }
+      },
+
+      _setYObserverRecursive: function(pathString, yMap) {
+        var type = undefined
+
+        if(yMap.keys) {
+          type = 'object'
+          var properties = yMap.keys()
+          
+          for(var i = 0; i < properties.length; i++) {
+            var value = yMap.get(properties[i])
+            var valuePath = `${pathString}.${properties[i]}`
+            var oldValue = this.get(valuePath)
+
+            if(value.os && value.os.y) {
+              this._setYObserverRecursive(valuePath, value)
+            } else if(oldValue != value) {
+              this.set(valuePath, value)
+            }
+          }
+        } else if(yMap.toArray) {
+          type = 'array'
+          var arr = yMap.toArray()
+
+          for(var i = 0; i < arr.length; i++) {
+            var value = arr[i]
+            var valuePath = `${pathString}.${i}`
+            var oldValue = this.get(valuePath)
+
+            if(value.os && value.os.y) {
+              this._setYObserverRecursive(valuePath, value)
+            } else if(oldValue != value) {
+              this.set(valuePath, value)
+            }
+          }
+        }
+
+        this._setObserverOnObject(this.get(pathString), pathString, yMap, type)
+      },
+
+      _populateStorage: function(storage) {
+        for(var i in storage) {
+          this.set(i, storage[i])
+        }
+      },
+
+      _createYVariable: function(variableName, variableType, callback) {
+        var self = this
+        var yType = undefined
+        if(variableType == 'object'){
+            yType = 'Map'
+        } else if(variableType == 'array') {
+            yType = 'Array'
+            // yType = 'Array'
+        } else if(variableType == 'string' || variableType == 'number' || variableType == 'boolean') {
+            yType = 'Map'
+        } else {
+          console.log('yType not valid')
+        }
+
+        var emitterY = new EventEmitter()
+
+        new Y({
+          db: { name: 'memory'},
+
+          connector: {
+            name: 'liquid',
+            // name: 'webrtc-liquid',
+            // peerConnection:
+            component: this,
+            room: 'liquidroom'+this.roomToken,
+            // room: 'liquidroom',
+            variable: variableName,
+            eventEmitter: emitterY
+          },
+
+          sourceDir: '/',
+          share: {
+            state: yType
+          },
+
+          // sourceDir: '',
+          // types:['Map', /*'Array',*/ 'Text']
+        }).then(function (y) {
+          //TODO here. Subscribe the emitter .subscribe(__liquidComponentUrl, emitter)
+          // subscribe(self.__liquidComponentUrl, emitterY, y.connector.room)
+          LiquidPeerConnection.subscribe(variableName, self.__liquidComponentUrl, emitterY)
+
+          self.__componentYs[variableName] = y
+          self.__emitterYs[variableName] = emitterY
+
+          if(callback)
+            callback(y)
+        })
+      },
+
+      _emptyStack: function() {
+        for(var i = 0; i < this.__stackedOperations.length; i++) {
+          var element = this.__stackedOperations[i]
+          this[element.operation].apply(this, element.parameters)
+        }
+
+        // this.__stackedOperations = []
+      },
+
+      _updateLiquidVariablesLists: function() {
+        if(!this.__liquiduiComponent) {
+          for(var i = 0; i < this.childNodes.length; i++) {
+            if(this.childNodes[i].nodeName.startsWith('LIQUID-UI')) {
+              this.__liquiduiComponent = this.childNodes[i]
+            }
+          }
+        }
+
+        this.__liquiduiComponent.updateName(this.liquidname)
+        this.__liquiduiComponent.liquiduiType = this.liquidui
+
+        this._changedLiquidPrimitives()
+        this._changedLiquidArrays()
+        this._changedLiquidObjects()
+      },
+
+      _changedLiquidPrimitives: function() {
+        if(this.__liquiduiComponent) {
+          this.__liquiduiComponent.updateLiquidPrimitives(this.__liquidRegisteredPrimitivesVariables)
+        }
+      },
+
+      _changedLiquidArrays: function() {
+        if(this.__liquiduiComponent) {
+          this.__liquiduiComponent.updateLiquidArrays(this.__liquidRegisteredArrayVariables)
+        }
+      },
+
+      _changedLiquidObjects: function() {
+        if(this.__liquiduiComponent) {
+          this.__liquiduiComponent.updateLiquidObjects(this.__liquidRegisteredObjectVariables)
+        }
+      },
+
+      _loadUI: function() {
+        if(!this.__isInitialised.all) {
+          this.__stackedOperations.push({
+            operation: '_loadUI',
+            parameters: []
+          })
+
+          return
+        }
+
+        var self = this
+
+        if(!self.liquidui || self.liquidui == '') {
+          return
+        }
+
+        // var liquidui = undefined
+        if(self.liquidui == 'default') {
+          var liquidui = document.createElement('liquid-ui')
+          liquidui.liquidComponentUrl = self.__liquidComponentUrl
+          liquidui.liquidComponentType = self.__liquidComponentUrl.type
+          self.insertBefore(liquidui, self.firstChild);
+        } else {
+          Liquid.loadAsset(self.liquidui, 'html').then(function(){
+            var liquidui = document.createElement('liquid-ui-' + self.liquidui)
+
+            liquidui.liquidComponentUrl = self.__liquidComponentUrl
+            liquidui.liquidComponentType = self.__liquidComponentUrl.type
+            self.insertBefore(liquidui, self.firstChild);
+          })
+        }
+      },
+
+      /**
+       * Sets the room token and initialisation flag to true
+       * @param {[type]} value roomToken String/number
+       */
+      _setRoomToken: function(value) {
+        this.roomToken = value
+        this._setInitialisation('roomToken', true)
+      },
+
+      /**
+       * Sets the given initialisation flag
+       * @param {[type]} name  name of the flag
+       * @param {[type]} value value of the flag
+       */
+      _setInitialisation: function(name, value) {
+        this.__isInitialised[name] = value
+        this._checkIntialisation()
+      },
+
+      /**
+       * Checks that the initialisation was done correclty and register the component if not done yet
+       * Once initialised, execute _emptyStack()
+       * @return {[type]} [description]
+       */
+      _checkIntialisation: function() {
+        if(this.__isInitialised.roomToken && !this.__isInitialised.yjs && !this.__isInitialised.all) {
+          Liquid.registerComponent(this, this.tagName.replace('LIQUID-COMPONENT-', '').toLocaleLowerCase(), {});
+          this._scanRegisterVariable();
+        }
+
+        if(this.__isInitialised.yjs && this.__isInitialised.roomToken && !this.__isInitialised.all) {
+          this.__isInitialised['all'] = true
+          this._emptyStack();
+        }
+      },
+    };
+</script>

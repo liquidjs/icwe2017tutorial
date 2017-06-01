@@ -1,0 +1,151 @@
+doctype html
+html
+	head
+		script(src="/fetch/fetch.js")
+		script(src="/webcomponentsjs/webcomponents-lite.min.js")
+		<link rel="import" href="/polymer/polymer.html">
+		<link href="/intro.js/introjs.css" rel="stylesheet">
+
+		script.
+			var liquidConfig = !{JSON.stringify(client)}
+
+		title.
+			Liquid.js
+
+		meta(name="viewport", content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+
+		style.
+			html,body {
+				height: 100%;
+				margin: 0;
+				font-family: 'RobotoDraft', sans-serif;
+				-webkit-user-select: none;
+				background-color: #D4D4D4;
+			}
+
+		style(is="custom-style").
+			.container {
+				margin: 0 auto;
+				margin-top: 20px;
+				margin-bottom: 20px;
+				width: 80%;
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				justify-content: space-between;
+				align-content: center;
+				align-items: flex-start;
+			}
+
+			.container img {
+				border: 2px solid black;
+			}
+
+			liquid-component-picture {
+				margin: auto;
+			}
+
+			.verticalContainer {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				justify-content: space-between;
+			}
+
+			#cameraRow {
+				margin-left: auto;
+				margin-right: auto;
+				text-align: center;
+				width: 300px;
+				padding-bottom: 5%;   
+				padding-top: 20px;
+			}
+
+			#camera {
+				background-color: white;
+			}
+
+			#asciiPolaroid {
+				background-color: white; 
+			}
+
+			#camera video {
+				margin-left: auto;
+				margin-right: auto;
+				padding: 5%;
+				padding-bottom: 15%;
+				width: 90%;
+				height: 90%;
+			}    
+
+			#camera canvas {
+				width: 450px;
+				height: 450px;
+			}
+
+			.polaroid {
+				-webkit-transform: rotate(-2deg);
+				-moz-transform: rotate(-2deg);
+
+				-webkit-transition: -webkit-transform .15s linear;
+
+				-webkit-box-shadow: 0 3px 6px rgba(0,0,0,.25);
+				-moz-box-shadow: 0 3px 6px rgba(0,0,0,.25);
+			}
+
+			.polaroid:hover{
+				-webkit-box-shadow: 0 3px 6px rgba(0,0,0,.5);
+				-moz-box-shadow: 0 3px 6px rgba(0,0,0,.5);
+			}
+
+			#gallery {
+				text-align: center;
+				width: 98%;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+
+	body(unresolved onload="load()")
+		canvas#canvas(width="300px", height="240px", style="display:none")
+
+		div.toolbar
+
+		div#cameraRow
+			div#camera.polaroid(title="Click to take picture!", onclick="takePicture()")
+				video#video(autoplay="autoplay").
+					Video stream not available
+				canvas#canvas(width="450px", height="450px", style="display:none")
+
+		div.container(style="display:none")
+			img(src="/images/unfilter0.png", height="160", width="200", onclick="addPicture(0)")
+			img(src="/images/unfilter1.png", height="160", width="200",onclick="addPicture(1)")
+			img(src="/images/unfilter2.png", height="160", width="200", onclick="addPicture(2)")
+
+		div.verticalContainer
+
+		script(src="/scripts/imageEffects.js")
+
+		script(src="/intro.js/intro.js")
+		script(src="/corescripts/liquidAPI.js")
+
+		script(src="/scripts/photo-admin.js")
+
+		<!-- Piwik -->
+		script(type="text/javascript").
+			var _paq = _paq || [];
+			// tracker methods like "setCustomDimension" should be called before "trackPageView"
+			_paq.push(["setDomains", ["*.liquid.inf.usi.ch","*.liquid.inf.unisi.ch","*.liquid.inf.usi.ch"]]);
+			_paq.push(['trackPageView']);
+			_paq.push(['enableLinkTracking']);
+			(function() {
+			var u="//design.inf.unisi.ch/piwik/";
+			_paq.push(['setTrackerUrl', u+'piwik.php']);
+			_paq.push(['setSiteId', '8']);
+			var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+			g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+			})();
+
+		noscript.
+			<p><img src="//design.inf.unisi.ch/piwik/piwik.php?idsite=8&rec=1" style="border:0;" alt="" /></p>
+		<!-- End Piwik Code -->

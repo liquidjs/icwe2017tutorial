@@ -1,0 +1,28 @@
+html
+	head
+		!= head
+
+		each style, index in styles
+			<link rel="stylesheet" type="text/css" href="/styles/#{style}" />
+	body
+		!= body
+
+		script
+			- var page_specification = 'var __page = "' + page + '"\n'
+				!= page_specification
+
+			- var subscription_specification = 'var __subscription = "' + subscription + '"\n'
+				!= subscription_specification
+
+			- var export_specification = 'var exports = {}'
+				!= export_specification
+
+		script(src="/socket.io/socket.io.js")
+
+		script(src="/scripts/commons.js")
+
+		each script, index in scripts
+			script(src="/scripts/#{script}")
+			
+		script
+			include ../scripts/application_main.js

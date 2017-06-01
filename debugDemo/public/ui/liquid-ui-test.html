@@ -1,0 +1,153 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="../paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../paper-toolbar/paper-toolbar.html">
+
+<link rel="import" href="../paper-spinner/paper-spinner.html">
+
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/communication-icons.html">
+<link rel="import" href="../iron-icons/hardware-icons.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html">
+
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-menu/paper-submenu.html">
+<link rel="import" href="../paper-item/paper-item.html">
+
+<link rel="import" href="../paper-input/paper-input.html">
+
+
+<dom-module id="liquid-ui-test">
+  <style is="custom-style">
+      #application {
+        background: white;
+        /*border: 1px black solid;*/
+      }
+
+      paper-header-panel {
+        height: 100%;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      paper-toolbar {
+        background: #4F4;
+        color: white;
+      }
+
+      #application {
+        min-width:350px;
+      }
+
+      .operation-option {
+        /*display: table-cell;*/
+        flex-basis: 100%;
+        text-align:center;
+      }
+
+      .operation-wrapper {
+        display: flex;
+        margin-left:2px;
+        margin-right:2px;
+        /*table-layout: fixed;*/
+      }
+
+      .titleItem{
+        color:black;
+      }
+
+      .contentItem {
+        --paper-input-container-color: black;
+        --paper-input-container-focus-color: black;
+        --paper-input-container-invalid-color: black;
+        --paper-input-container-input-color: black;
+      }
+    </style>
+  <template>
+    <div id="application">
+      <paper-toolbar draggable="true" on-dragstart="onDrag" on-touchend="onTouch"></paper-icon-button>
+        <span>{{depthToString(liquidDepth)}}</span>
+        <span>{{displayName(liquidname)}}</span>
+        <span class="flex"> </span>
+
+        <paper-menu-button horizontal-align='right'>
+          <paper-icon-button icon="icons:text-format" class="dropdown-trigger"></paper-icon-button>
+          <paper-menu class="dropdown-content">
+            <template is="dom-repeat" items="{{liquidPrimitives}}" as="item">
+              <paper-item class="titleItem" disabled>
+                <paper-icon-button disabled icon="icons:text-format"></paper-icon-button>
+                <paper-item disabled>{{item}}</paper-item>
+              </paper-item>
+              <paper-item on-click="copyURL">
+                <paper-input class="contentItem" disabled value="{{variableToURL(item)}}"></paper-input>
+              </paper-item>
+            </template>
+          </paper-menu> 
+        </paper-menu-button>
+
+        <paper-menu-button horizontal-align='right'>
+          <paper-icon-button icon="icons:view-agenda" class="dropdown-trigger"></paper-icon-button>
+          <paper-menu class="dropdown-content">
+            <template is="dom-repeat" items="{{liquidArrays}}" as="item">
+              <paper-item class="titleItem" data-name$="{{item}}" on-click="copyURL">
+                <paper-icon-button disabled icon="icons:view-agenda"></paper-icon-button>
+                <paper-item disabled>{{item}}</paper-item>
+              </paper-item>
+              <paper-item on-click="copyURL">
+                <paper-input class="contentItem" disabled value="{{variableToURL(item)}}"></paper-input>
+              </paper-item>
+            </template>
+          </paper-menu> 
+        </paper-menu-button>
+
+        <paper-menu-button horizontal-align='right'>
+          <paper-icon-button icon="icons:view-day" class="dropdown-trigger"></paper-icon-button>
+          <paper-menu class="dropdown-content">
+            <template is="dom-repeat" items="{{liquidObjects}}" as="item">
+              <paper-item class="titleItem" data-name$="{{item}}" on-click="copyURL">
+                <paper-icon-button disabled icon="icons:view-day"></paper-icon-button>
+                <paper-item disabled>{{item}}</paper-item>
+              </paper-item>
+              <paper-item on-click="copyURL">
+                <paper-input class="contentItem" disabled value="{{variableToURL(item)}}"></paper-input>
+              </paper-item>
+            </template>
+          </paper-menu> 
+        </paper-menu-button>
+
+        <paper-menu-button horizontal-align='right'>
+          <paper-icon-button icon="icons:build" class="dropdown-trigger"></paper-icon-button>
+          <paper-menu class="dropdown-content">
+            <template is="dom-repeat" items="{{devicesToArray(devicesInfo)}}" as="item">
+              <template is="dom-if" if="{{isNotThisDevice(item)}}">
+                <paper-item class="titleItem" disabled>
+                  <paper-icon-button disabled icon="{{typeToIcon(item.type)}}"></paper-icon-button>
+                  <paper-item disabled>{{item.username}}</paper-item>
+                </paper-item>
+                <paper-item class="operation-wrapper">
+                  <div class="operation-option" data-operation="migrate" data-identifier$="{{item.id}}" on-click="onOperation">Move</div>
+                  <div class="operation-option" data-operation="fork" data-identifier$="{{item.id}}" on-click="onOperation">Fork</div>
+                  <div class="operation-option" data-operation="clone" data-identifier$="{{item.id}}" on-click="onOperation">Clone</div>
+                  <template is="dom-if" if="{{isContained()}}">
+                    <div class="operation-option" data-operation="cloneHide" data-identifier$="{{item.id}}" on-click="onOperation">CHide</div>
+                  </template>
+                </paper-item>
+              </template>
+            </template>
+
+            <paper-item class="titleItem" disabled> Other </paper-item>
+            <!-- <paper-item>Broadcast Fork</paper-item> -->
+            <paper-item on-click="onClose">Delete</paper-item>
+          </paper-menu>
+        </paper-menu-button>
+      </paper-toolbar>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-ui-test',
+      behaviors: [LiquidUIBehavior],
+    });
+  </script>
+</dom-module>

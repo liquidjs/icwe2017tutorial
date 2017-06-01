@@ -1,0 +1,173 @@
+doctype html
+html
+	head
+		script(src="webcomponentsjs/webcomponents-lite.min.js")
+		<link rel="import" href="polymer/polymer.html">
+
+		<link rel="import" href="/paper-toolbar/paper-toolbar.html">
+		<link rel="import" href="/paper-card/paper-card.html">
+		<link rel="import" href="/paper-button/paper-button.html">
+
+		style(is="custom-style").
+			body {
+				background-color: #4E6B5B;
+				font-family: 'Open Sans', sans-serif;
+				font-size: 125%;
+			}
+
+			paper-card {
+				width:380px;
+				background-color: #45A173;
+			}
+
+			a {
+				color: black;
+				text-decoration:none;
+			}
+
+			paper-button.highlight {
+				margin-top: auto;
+				background-color: #1976d2;
+				color: white;
+			}
+
+			paper-button.dark-highlight {
+				margin-top: auto;
+				background-color: #4E6B5B;
+				color: white;
+			}
+
+			.container {
+				margin: 0 auto;
+				margin-top: 20px;
+				width: 80%;
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				justify-content: space-between;
+				align-content: center;
+				align-items: flex-start;
+			}
+
+			.card-content {
+				text-align:center;
+				background-color: #45A173;
+				color: white;
+			}
+
+			.content-container {
+				height:100%;	
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+			}
+
+			p {
+				text-align: justify;
+			}
+
+			.liquidjs {
+				width: 100%;
+			}
+
+			.liquidjs .card-content .logo {
+				width: 100%;
+			}
+
+			.liquidjs .card-content .devices {
+				width: 50%;
+			}
+
+			paper-toolbar {
+				width:80%;
+				margin:auto;
+				background-color: #45A173;
+			}
+
+			.center {
+				margin:auto;
+			}
+
+		title.
+			Welcome
+
+	body
+		paper-toolbar
+			div.center
+				a(href="/")
+					paper-button.dark-highlight.
+						Card game
+				a(href="/photo")
+					paper-button.dark-highlight.
+						Photo Filtering
+				a(href="/chat")
+					paper-button.dark-highlight.
+						Chat Migration
+				a(href="/editor")
+					paper-button.dark-highlight.
+						Editor
+
+		div.container
+			paper-card(image="images/hand2.png")
+				div.card-content
+					div.content-container
+						h2.
+							Hand
+						p.
+							Join the demo as an hand device. Take your cards from the deck device and drag them on your device, which simulates your hand. Order and flips your cards as you wish and drag them on the central device.
+
+						a(href="/hand")
+							paper-button.highlight.
+								Connect
+
+			paper-card(image="images/deck2.png")
+				div.card-content
+					div.content-container
+						h2.
+							Deck
+						p.
+							Join the demo as a deck device. You can create cards by clicking on the deck in the center of the view and then drag cards from one device to another.
+							<br/>
+							In this demo only one deck device is allowed.
+
+						a(href="/deck")
+							paper-button.highlight.
+								Connect
+
+		div.container
+			paper-card.liquidjs
+				div.card-content
+					h3.
+						The Framework
+
+					img.logo(src="images/liquidLogo2.png")
+
+					p.
+						Liquid.js is a Web framework for creating component-based applications able to seamlessly flow between multiple heterogeneous devices following the user attention. Users owning multiple devices can take advantage of running liquid Web applications taking full advantage of all of their devices. 
+						
+					p.
+						Liquid applications are meant to run sequentially or in parallel on a dynamic set of devices connected in a Peer to Peer mesh. Developers aiming to add liquid behaviors on top of their Polymer applications can take advantage of the APIs provided by the framework in order to migrate, fork or clone their already built Web components. Stateful components are automatically and transparently syncrhonised between devices without relying on a centralized master copy deployed in the Cloud.
+
+					p.
+						Liquid.js is built on Polymer, WebRTC and Yjs.
+
+					img.devices(src="images/liquidDevices.png")
+
+		<!-- Piwik -->
+		script(type="text/javascript").
+			var _paq = _paq || [];
+			// tracker methods like "setCustomDimension" should be called before "trackPageView"
+			_paq.push(["setDomains", ["*.liquid.inf.usi.ch","*.liquid.inf.unisi.ch","*.liquid.inf.usi.ch"]]);
+			_paq.push(['trackPageView']);
+			_paq.push(['enableLinkTracking']);
+			(function() {
+			var u="//design.inf.unisi.ch/piwik/";
+			_paq.push(['setTrackerUrl', u+'piwik.php']);
+			_paq.push(['setSiteId', '8']);
+			var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+			g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+			})();
+
+		noscript.
+			<p><img src="//design.inf.unisi.ch/piwik/piwik.php?idsite=8&rec=1" style="border:0;" alt="" /></p></noscript>
+		<!-- End Piwik Code -->

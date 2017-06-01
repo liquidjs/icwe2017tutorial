@@ -1,0 +1,452 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+
+<dom-module id="liquid-ui-spatial">
+<style is="custom-style">
+  :root {
+      border: 1px solid black;
+      --paper-input-container-color: black;
+      --paper-input-container-input-color: black;
+      --paper-input-container-focus-color: black;
+  }
+
+  #test {
+    height: 40px;
+    width: 40px;
+    border-radius: 50px;
+    /*margin-left: 50%;*/
+    transform: translate(-30px);
+    background-color: white;
+    /*display: block;*/
+    position:relative;
+    left:40px;
+    top:20px;
+  }
+
+  .iron-icon-1{
+    width: 50%;
+    height: 50%;
+    justify-content: center;
+    position: relative;
+    vertical-align: middle;
+    fill: black;
+    transform: translate(50%, 50%);
+  }
+
+  .iconShare{
+    width: 50%;
+    height: 50%;
+    justify-content: center;
+    position: relative;
+    vertical-align: middle;
+    fill: white;
+    transform: translate(50%, 50%);
+  }
+
+
+  #topRight, #topLeft, #bottomLeft, #bottomRight, #leftTop, #leftBottom, #rightTop, #rightBottom {
+  	background-color: rgba(0, 0, 0, 0.5);
+  	position: fixed;
+    display: block;
+    border-width: 0px;
+    z-index: 5;
+	}
+
+  #leftTop {
+    left: 0;
+		top: 70px;
+    height: calc(50% - 70px);
+		width: 70px;
+	}
+
+  #leftBottom {
+    left: 0;
+    bottom: 70px;
+    height: calc(50% - 70px);
+		width: 70px;
+	}
+
+  #rightTop {
+    right: 0;
+		top: 70px;
+    height: calc(50% - 70px);
+		width: 70px;
+	}
+
+  #rightBottom {
+    right: 0;
+    bottom: 70px;
+    height: calc(50% - 70px);
+		width: 70px;
+	}
+
+
+	#topLeft {
+    top: 0;
+		left: 0;
+    width: 50%;
+		height: 70px;
+	}
+
+  #topRight {
+    top: 0;
+    right: 0;
+    width: 50%;
+		height: 70px;
+	}
+
+  #bottomLeft {
+    bottom: 0;
+		left: 0;
+    width: 50%;
+		height: 70px;
+	}
+
+  #bottomRight {
+    bottom: 0;
+    right: 0;
+    width: 50%;
+		height: 70px;
+	}
+
+
+  .deviceShareBtn{
+    float: center;
+    border-radius: 40px;
+    border-width: 0;
+    width: 50px;
+    height: 50px;
+    color: white;
+    background-color: pink;
+    position: relative;
+    vertical-align: middle;
+    line-height: 0px;
+    z-index: 300000;
+    margin-left: 10px;
+    margin-top: 10px;
+  }
+
+  /* tags properties colours*/
+  .adminBtn{
+    background-color: Crimson; /* red */
+  }
+
+  .editorBtn{
+    background-color: #ed881c; /* orange */
+  }
+
+  .contributorBtn{
+    background-color: #dee516; /* yellow */
+  }
+
+  .readerBtn{
+    background-color: #079634; /* green */
+  }
+
+  .guestBtn{
+    background-color: #1b60d1; /* blue */
+
+  }
+
+
+</style>
+  <template>
+
+
+    <div id="test" draggable="true" on-dragstart="shareDragStart" on-dragend="shareDragEnd">
+      <iron-icon id = "iconTest" icon="icons:file-upload"></iron-icon>
+    </div>
+
+    <template is="dom-repeat" items={{objToArray(nodes)}} as="node">
+      <div id="{{node.pos}}">
+        <template is="dom-repeat" items={{node.device}} as="dev">
+          <div id="{{idToShare(dev.id)}}" data-identifier$={{dev.id}} data-zone$={{node.pos}} class$="{{setClassDev(dev.tag)}}" on-drop="onShareDrop" on-dragover="shareOver" on-dragleave="nodeShareOut"> 
+            <iron-icon class="iconShare" icon="{{getDeviceIconShare(dev.id)}}">
+            </iron-icon>
+          </div>
+        </template>
+      </div>
+    </template>
+
+
+
+
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-ui-spatial',
+
+      behaviors: [LiquidUIBehavior],
+      properties: {
+        spatial: {
+          value: null
+        },
+
+        nodes: {
+          value: null,
+          type: Object
+        }
+
+      },
+      //
+      // observers: [
+      //   '_notifyShareScreen(overShare.*)'
+      // ],
+
+      attached: function() {
+        this.spatial = Liquid.getSpatial();
+        if(this.spatial != null) console.log("got spatial");
+
+        // this.spatial.addEventListener('devicesUpdated', this.updateOverShare())
+      },
+
+      detached: function() {
+        this.spatial = Liquid.getSpatial();
+        console.log("updated spatial");
+      },
+
+
+      nodeObjToArray: function(obj) {
+            return Object.keys(obj).map(function(key) {
+                return {
+                    id: key,
+                    tag: obj[key]
+                };
+            });
+      },
+
+      objToArray: function(obj) {
+            if(obj != null ){
+              // var that = this;
+              return Object.keys(obj).map(function(key) {
+                  return {
+                      pos: key,
+                      device: obj[key]
+                  };
+              });
+            }
+      },
+
+      setClassDev: function(tag){
+        return "deviceShareBtn " + tag + "Btn"
+      },
+
+      getDeviceIconShare: function(id){
+
+        return this.spatial.getDeviceIcon(id);
+      },
+
+      // updateOverShare: function() {
+      //   // this.overDevs = {};
+      //   // this.overShare = {};
+      //   // console.log(">>> " + this.spatial.numberDevices);
+      //   for (var i = 0; i < this.spatial.numberDevices; i++){
+      //
+      //     // if(this.spatial.devices[i] in this.overShare)
+      //     // console.log(this.spatial.devices[i] in this.overShare);
+      //     this.set('overShare.' + this.spatial.devices[i], false)
+      //     // console.log(">>> update overShare with: " + this.overShare[this.spatial.devices[i]]);
+      //     // this.set('overShare.' + this.devices[i], false)
+      //     // this.overDevs[this.devices[i]] = false;
+      //     // this.overShare[this.devices[i]] = false;
+      //   }
+      //   console.log("overShare LISTENER:");
+      //   console.log(this.overShare);
+      //   // console.log("overShare");
+      //   // console.log(this.overShare);
+      // },
+
+      shareDragStart: function(e) {
+        e.dataTransfer.setData('device', e.target.getAttribute('id'));
+        e.target.style.zIndex = 10000
+        e.target.style.opacity = 0.2
+
+        // TODO one single call -> return object {top:left..., topright:...}
+        this.nodes = this.spatial.getNodesPosition(this.spatial.deviceId);
+
+        if(this.$$("#topLeft")){
+          this.$$("#topLeft").style.display = 'block';
+          this.$$("#topRight").style.display = 'block';
+          this.$$("#bottomLeft").style.display = 'block';
+          this.$$("#bottomRight").style.display = 'block';
+          this.$$("#leftTop").style.display = 'block';
+          this.$$("#leftBottom").style.display = 'block';
+          this.$$("#rightTop").style.display = 'block';
+          this.$$("#rightBottom").style.display = 'block';
+        }
+      },
+
+      /*
+      return zone string
+      zones: bottom, right, left, top
+      */
+      // getZone: function(nodeId){
+        // var nodeZone = this.$$("#" + nodeId).parentElement.id;
+        // // if(nodeId[0] == "s" ) console.log("area s: " + nodeZone);
+        // if(nodeId[0] == "u") {
+        //   nodeZone = this.$$("#" + nodeZone).parentElement.id;
+        //   // console.log("area u: " + nodeZone);
+        // }
+        // return nodeZone.split(/(?=[A-Z])/)[0];
+      // },
+
+      shareOver: function(e){
+        var id = e.target.dataset.identifier || e.target.parentNode.dataset.identifier;
+        var zone = e.target.dataset.zone || e.target.parentNode.dataset.zone;
+        if(id && zone) {
+          if(this.spatial.overShare[id] != zone) {
+            console.log("over " + zone + " " + id);
+            this.spatial.set('overShare.' + id, zone);
+          }
+        }     
+      },
+
+      nodeShareOut: function(e){
+          var id = e.target.dataset.identifier || e.target.parentNode.dataset.identifier;
+          
+          if(id) {
+            console.log('out')
+            this.spatial.set('overShare.' + id, false);
+          }
+      },
+
+      /**
+      * see screen referred to node over
+      * move this where? To be called always
+      */
+      // notifyShareScreen: function(id, zone){
+      //   console.log("ZONE: " + zone);
+      //   // this.spatial.overShare[id] = "right";
+      //   if(this.spatial.overShare[id] != false && this.spatial.isMe(id)){
+      //     this.$$("#pendingShare" + this.getSenderZone(zone)).style.display = "block";
+      //     // console.log("@@@@@@@@ sharing something @@@@@@@");
+      //   } else {
+      //     this.$$("#pendingShare" + this.getSenderZone(zone)).style.display = "none";
+      //     // console.log("@@@@@@@@ IM HIDDEN something @@@@@@@");
+      //   }
+      // },
+
+      // _notifyShareScreen: function(shareChanges) {
+      //   console.log("#### updtated in overShare:");
+      //   console.log(shareChanges);
+      //   console.log("> new overShare");
+      //   console.log(this.overShare);
+      //
+      //   var id = shareChanges.path.split('.')[1]
+      //   var zone = shareChanges.value
+      //
+      //   console.log(id + " in zone " + zone);
+      //
+      //
+      //   if(zone != false && id != null && this.spatial.isMe(id) ){
+      //     console.log("@@@@ BOUNCING");
+      //       this.$$("#pendingShare" + this.getSenderZone(this.sharingZone)).style.display = "block";
+      //       // console.log("@@@@@@@@ sharing something @@@@@@@");
+      //     } else {
+      //       this.$$("#pendingShare" + this.getSenderZone(this.sharingZone)).style.display = "none";
+      //       // console.log("@@@@@@@@ IM HIDDEN something @@@@@@@");
+      //     }
+      // },
+
+
+
+      getOperation: function(dropNode, nodeZone){
+        // depending on the tag's device, an operation is returned
+        var nodeToShare = this.spatial.stripID(dropNode);
+        console.log("sharing with: " + nodeToShare + "\tarea: " + nodeZone);
+
+        var nodesInZone = this.nodes[nodeZone];
+        // console.log(nodesInZone[0]);
+
+        var tagOfNode;
+        for(var i = 0; i < nodesInZone.length; i++){
+          if(nodesInZone[i].id == nodeToShare){
+            // console.log("tag? " + nodesInZone[i].id + "\t with tag: " + nodesInZone[i].tag);
+            tagOfNode = nodesInZone[i].tag;
+          }
+        }
+
+        return 'clone';
+        //guest? alert?
+
+        //fork
+
+        //migrate
+      },
+
+      onShareDrop: function(e, target) {
+        console.log("onDrop");
+        var id = e.dataTransfer.getData('device')
+        var dropArea = e.target.id;
+
+        this.$$('#test').style.zIndex = 0
+        this.$$('#test').style.opacity = 1
+
+        // console.log('@@@@' + dropArea)
+        if(dropArea[0] != 'u' && dropArea[0] != 's') {
+          return
+        }
+
+        // console.log("dropped on: " + dropArea)
+        var nodeZone = this.$$("#" + dropArea).parentElement.id;
+        if(dropArea[0] == "s" ) console.log("area s: " + nodeZone);
+        if(dropArea[0] == "u") {
+          nodeZone = this.$$("#" + nodeZone).parentElement.id;
+          // console.log("area u: " + nodeZone);
+        }
+
+        console.log(">>> dropped over " + nodeZone + " dropaArea: " + dropArea);
+
+        var data = {
+          identifier: this.spatial.stripID(dropArea),
+          operation: this.getOperation(dropArea, nodeZone), // TODO: fork migrate for different operation and tag
+          fromURL: this.liquidCOmponentURl,
+          fromUI: this.liquiduiType,
+          fromState: this.parentNode.getLiquidVariablesValue(),
+          isContainer: this.parentNode._isContainerComponent(),
+          childComponents: this.parentNode._getLiquidChildComponents()
+        }
+
+        this.onOperation(e, data);
+
+        // hide share div
+        this.$$("#topLeft").style.display = 'none';
+        this.$$("#topRight").style.display = 'none';
+        this.$$("#bottomLeft").style.display = 'none';
+        this.$$("#bottomRight").style.display = 'none';
+        this.$$("#leftTop").style.display = 'none';
+        this.$$("#leftBottom").style.display = 'none';
+        this.$$("#rightTop").style.display = 'none';
+        this.$$("#rightBottom").style.display = 'none';
+
+        // this.$$("#pendingShare" + this.spatial.getSenderZone(this.spatial.sharingZone)).style.display = "none";
+
+      },
+
+      shareDragEnd: function(e) {
+        this.$$('#test').style.zIndex = 0
+        this.$$('#test').style.opacity = 1
+
+        if(this.$$("#topLeft")){
+          this.$$("#topLeft").style.display = 'none';
+          this.$$("#topRight").style.display = 'none';
+          this.$$("#bottomLeft").style.display = 'none';
+          this.$$("#bottomRight").style.display = 'none';
+          this.$$("#leftTop").style.display = 'none';
+          this.$$("#leftBottom").style.display = 'none';
+          this.$$("#rightTop").style.display = 'none';
+          this.$$("#rightBottom").style.display = 'none';
+        }
+      },
+
+      idToShare: function(device) {
+        return 's' + device
+      },
+
+      idToShareIcon: function(device) {
+        return 'u' + device
+      },
+
+    });
+  </script>
+</dom-module>

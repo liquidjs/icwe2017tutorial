@@ -1,0 +1,79 @@
+doctype html
+html
+	head
+		script(src="/fetch/fetch.js")
+		script(src="/webcomponentsjs/webcomponents-lite.min.js")
+		<link rel="import" href="/polymer/polymer.html">
+		<link href="/intro.js/introjs.css" rel="stylesheet">
+
+		script.
+			var liquidConfig = !{JSON.stringify(client)}
+
+		script(src="/components/webrtc/peer.js")
+
+
+		title.
+			Liquid.js
+
+		meta(name="viewport", content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+
+		style.
+			html,body {
+				height: 100%;
+				margin: 0;
+				font-family: 'RobotoDraft', sans-serif;
+			}
+			
+			.verticalContainer {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				justify-content: center;
+			}
+
+			#nickname {
+				margin:10px;
+				width:20%;
+			}
+
+			#addChat {
+				margin:10px;
+				background-color: #3f51b5;
+				color: white;
+			}
+
+	body(unresolved onload="load()")
+		div.toolbar
+
+		div.buttons(style="display:none")
+			paper-button#addChat.
+				New chat room
+			paper-input#nickname(label="Insert your nickname here:", placeholder="Nickname")
+
+		hr
+
+		div.verticalContainer
+
+		script(src="/intro.js/intro.js")
+		script(src="/corescripts/liquidAPI.js")
+
+		script(src="/scripts/chat-admin.js")
+
+		<!-- Piwik -->
+		script(type="text/javascript").
+			var _paq = _paq || [];
+			// tracker methods like "setCustomDimension" should be called before "trackPageView"
+			_paq.push(["setDomains", ["*.liquid.inf.usi.ch","*.liquid.inf.unisi.ch","*.liquid.inf.usi.ch"]]);
+			_paq.push(['trackPageView']);
+			_paq.push(['enableLinkTracking']);
+			(function() {
+			var u="//design.inf.unisi.ch/piwik/";
+			_paq.push(['setTrackerUrl', u+'piwik.php']);
+			_paq.push(['setSiteId', '8']);
+			var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+			g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+			})();
+
+		noscript.
+			<p><img src="//design.inf.unisi.ch/piwik/piwik.php?idsite=8&rec=1" style="border:0;" alt="" /></p></noscript>
+		<!-- End Piwik Code -->

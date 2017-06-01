@@ -1,0 +1,261 @@
+<link rel="import" href="/polymer/polymer.html">
+
+<dom-module id="liquid-component-card">
+  <template>
+    <style>
+      :host {
+        position: absolute;
+      }
+    </style>
+    <div id="cardContainer" on-mousedown="startMove" on-touchstart="startMove">
+      <div id="card" class$="{{cardClass(view, card)}}">
+        <div id="view" class$="{{view}}"></div>
+      </div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-component-card',
+      
+      behaviors: [LiquidBehavior],
+
+      properties: {
+        view: {
+          type: String,
+          notify: true,
+          value: 'back',
+          liquid: true,
+          observer: 'debugger'
+        },
+
+        card: {
+          type: String,
+          notify: true,
+          value: "card",
+          liquid: true
+        },
+
+        handNumber: {
+          type: String,
+          notify: true,
+          value: 0,
+          liquid: true
+          observer: 'handNumberChange'
+        },
+
+        x: {
+          type: Number,
+          value: 0
+        },
+
+        y: {
+          type: Number,
+          value: 0
+        }
+      },
+
+      attached: function() {
+        if(window.type == 'hand') {
+          console.log(window.hand)
+          this.handNumber = window.hand
+        }
+
+        Liquid.addEventListener("handChange", (e) => {
+          if(window.type == 'hand') {
+            this.set('handNumber', window.hand)
+          }
+        });
+
+        window.zIndexCard = window.zIndexCard + 1 || 10
+        this.$.card.style.zIndex = window.zIndexCard++
+
+        if(window.type == 'hand') {
+          this.style.transform = 'translate(200px, 200px)';
+        } else if(window.type == 'deck') {
+          if(this.handNumber == 0) {
+            this.style.transform = 'translate(98px, 0px)';
+          }
+        }
+      },
+
+      handNumberChange: function(change) {
+        let w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        let h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+        let w2 = Math.round(w/2) - 32
+        let h2 = Math.round(h/2) - 39
+
+        if(window.type == 'deck') {
+          if(change == 1) {
+            this.style.transform = 'translate(' + 130 + 'px, ' + h2 + 'px)';
+          } else if (change == 2) {
+            this.style.transform = 'translate(' + w2 + 'px, ' + 130 + 'px)';
+          } else if (change == 3) {
+            this.style.transform = 'translate(' + (w - 130 - 78) + 'px, ' + h2 + 'px)';
+          } else if (change == 4) {
+            this.style.transform = 'translate(' + w2 + 'px, ' + (h - 130 - 78) + 'px)';
+
+          }
+        }
+      },
+
+      cardClass: function(view) {
+        if(view == 'back') {
+          return 'card'
+        } else {
+          return this.card
+        }
+      },
+
+      flipCard: function(){
+        if(this.view == 'face') {
+          this.view = 'back'
+          this.card
+        } else {
+          this.view = "face"
+        }
+      },
+
+      startMove: function(e) {
+        e.preventDefault();
+
+        Liquid.triggerUIEvent('draggedBtn');
+
+        var startTime = Date.now();
+        let self = this
+
+        let target = e.target
+        while(target.id != 'card') {
+          target = target.parentNode
+        }
+
+        let x = this.x
+        let y = this.y
+
+        let startPos = {};
+        let pos = {};
+
+        let moveCard = function(e) {
+          if(target) {
+            if (e.type === 'mousemove') {
+              pos.x = e.clientX;
+              pos.y = e.clientY;
+            } else {
+              pos.x = e.touches[0].clientX;
+              pos.y = e.touches[0].clientY;
+            }
+
+            target.style.transform = 'translate(' + Math.round(x + pos.x - startPos.x) + 'px, ' + Math.round(y + pos.y - startPos.y) + 'px)';
+      
+          }
+
+          self.x = x + pos.x - startPos.x;
+          self.y = y + pos.y - startPos.y;
+
+          // var w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; 
+          // var h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; 
+
+          var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+          var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+          if(window.deck) {
+            let isMigrate = false
+            let toURL = undefined
+            if(window.type == 'hand') {
+              if(e.pageY <= 100 || (e.touches && e.touches[0].clientY <= 100)) {
+                toURL = {
+                  device: window.deck
+                }
+                isMigrate = true
+              }
+            } else if(window.type == 'deck') {
+              if(e.pageX <= 50 || (e.touches && e.touches[0].clientX <= 50)) {
+                if(window.hands[0]) {
+                  toURL = {
+                    device: window.hands[0].deviceId
+                  }
+                  isMigrate = true
+                }
+              } else if(e.pageY <= 50 || (e.touches && e.touches[0].clientY <= 50)) {
+                if(window.hands[1]) {
+                  toURL = {
+                    device: window.hands[1].deviceId
+                  }
+                  isMigrate = true
+                }
+              } else if(e.pageX >= (w - 50) || (e.touches && e.touches[0].clientX >= (w - 50))) {
+                if(window.hands[2]) {
+                  toURL = {
+                    device: window.hands[2].deviceId
+                  }
+                  isMigrate = true
+                }
+              } else if(e.pageY >= (h - 50) || (e.touches && e.touches[0].clientY >= (h - 50))) {
+                if(window.hands[3]) {
+                  toURL = {
+                    device: window.hands[3].deviceId
+                  }
+                  isMigrate = true
+                }
+              }
+            }
+
+            if(isMigrate) {
+              let fromURL = self.__liquidComponentUrl
+              let target = 'container'
+              let messageData = {
+                liquidui: false,
+                liquidStorage: self.getLiquidVariablesValue(),
+                isContainer: false
+              }
+
+              if(window.type == 'deck') {
+                delete messageData.liquidStorage.handNumber
+              }
+
+              if (e.type === 'mousemove') {
+                window.removeEventListener('mousemove', moveCard)
+                window.removeEventListener('mouseup', stopMove)
+              } else {
+                window.removeEventListener('touchmove', moveCard)
+                window.removeEventListener('touchend', stopMove)
+              }
+
+              let message = Liquid.createMessage(fromURL, toURL, 'migrate', target, messageData)
+              Liquid.migrateComponent(fromURL, toURL, message)
+            }
+          }
+        }
+
+        let stopMove = function(e) {
+          if(Date.now() - startTime < 100) {
+            self.flipCard()
+          }
+
+          if (e.type === 'mouseup') {
+            window.removeEventListener('mousemove', moveCard)
+            window.removeEventListener('mouseup', stopMove)
+          } else {
+            window.removeEventListener('touchmove', moveCard)
+            window.removeEventListener('touchend', stopMove)
+          }
+        }
+
+        if (e.type === 'mousedown') {
+          startPos.x = pos.x = e.clientX;
+          startPos.y = pos.y = e.clientY;
+          window.addEventListener('mousemove', moveCard)
+          window.addEventListener('mouseup', stopMove)
+        } else {
+          startPos.x = pos.x = e.touches[0].clientX;
+          startPos.y = pos.y = e.touches[0].clientY;
+          window.addEventListener('touchmove', moveCard)
+          window.addEventListener('touchend', stopMove)
+        }
+
+        target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+        this.style.zIndex = window.zIndexCard++;
+      }
+    });
+  </script>
+</dom-module>

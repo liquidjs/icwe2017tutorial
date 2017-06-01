@@ -1,0 +1,79 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../google-map/google-map.html">
+<link rel="import" href="../google-map/google-map-directions.html">
+
+<link rel="import" href="../components/liquid-component-text.html">
+
+<dom-module id="liquid-component-googlemap">
+  <style></style>
+  <style is="custom-style">
+    :root {
+        border: 1px solid black;
+        --paper-input-container-color: black;
+        --paper-input-container-input-color: black;
+        --paper-input-container-focus-color: black;
+    }
+  </style>
+  <template>
+<!--       <liquid-component-text liquidui='default' liquidname="From:" text={{loc1}}></liquid-component-text>
+      <liquid-component-text liquidui='default' liquidname="To:" text={{loc2}}></liquid-component-text> -->
+
+      <!-- TOCHECK -->
+  <!--   <liquid-container> From: <paper-input value="{{loc1}}"></paper-input> 
+    To: <paper-input value="{{loc2}}"></paper-input></liquid-container>> -->
+
+    <paper-input label="Starting Location" value="{{loc1}}"></paper-input>
+    <paper-input label="Ending Location" value="{{loc2}}"></paper-input>
+
+    <google-map api-key="AIzaSyAFj7qH5ub0o-wT-ecPalLQcQZRQrBh11M" map="{{map}}" latitude="{{latitude}}" longitude="{{longitude}}" zoom="{{zoom}}"></google-map>
+    
+    <google-map-directions api-key="AIzaSyAFj7qH5ub0o-wT-ecPalLQcQZRQrBh11M" map="{{map}}"
+      start-address="{{loc1}}" end-address="{{loc2}}">
+    </google-map-directions>
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-component-googlemap',
+
+      behaviors: [LiquidBehavior],
+
+      properties: {
+        
+        latitude: {
+          value: 37.77493,
+          liquid: {
+            scope: 'shared'
+          }
+        },
+
+        longitude: {
+          value: -122.41942,
+          liquid: {
+            scope: 'shared'
+          }
+        },
+
+        zoom: {
+          value: 15,
+          liquid: {
+            scope: 'shared'
+          }
+        },
+
+        loc1: { 
+          value: "",
+          liquid: {
+            scope: 'shared'
+          }
+        },
+
+        loc2: { 
+          value: "",
+          liquid: {
+            scope: 'shared'
+          }
+        }
+      },
+    });
+  </script>
+</dom-module>

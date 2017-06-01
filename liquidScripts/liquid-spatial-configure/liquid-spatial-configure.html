@@ -1,0 +1,1682 @@
+<link rel="import" href="/paper-input/paper-input.html">
+<link rel="import" href="/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="/paper-tabs/paper-tabs.html">
+<link rel="import" href="/paper-menu/paper-menu.html">
+<link rel="import" href="/iron-icons/social-icons.html">
+<link rel="import" href="/iron-icons/iron-icons.html">
+<link rel="import" href="/paper-listbox/paper-listbox.html">
+<link rel="import" href="/paper-dialog-behavior/paper-dialog-behavior.html">
+<link rel="import" href="/paper-dialog-behavior/paper-dialog-shared-styles.html">
+<link rel="import" href="/paper-dialog/paper-dialog.html">
+<link rel="import" href="/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="/paper-button/paper-button.html">
+<link rel="import" href="/paper-toggle-button/paper-toggle-button.html">
+<!-- <link rel="import" href="../intro.js/intro.js"> -->
+<!-- <link rel="import" href="" -->
+
+<!-- <link rel="import" href="../liquid/applicationSani/components/liquid-component-text.html"> -->
+
+
+<dom-module id="liquid-component-spatial-configure">
+    <style is="custom-style">
+        paper-tabs paper-tab.iron-selected {
+            color: white;
+            background-color: transparent;
+            column-rule-color: transparent;
+        }
+
+         :root {
+            --paper-tabs-selection-bar-color: transparent;
+        }
+
+        #plain-tabs {
+            font-style: italic;
+            font-weight: bold;
+        }
+
+        #header {
+            background-color: black;
+            width: 100%;
+        }
+
+        .deviceBtn {
+            border-radius: 40px;
+            border-width: 0;
+            width: 50px;
+            height: 50px;
+            color: white;
+            position: relative;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 50px;
+            z-index: 1;
+            left: 50px;
+            top: 50px;
+        }
+
+        .adminBtn {
+            background-color: Crimson;
+            /* red */
+        }
+
+        .meBtn {
+            border-style: solid;
+            border-width: 0px !important;
+            border-style: dashed;
+            border-color: white !important;
+        }
+
+        .whiteIcon {
+            color: white;
+        }
+
+        .yellowIcon {
+            color: yellow;
+        }
+        /* tags properties colours*/
+
+        .editorBtn {
+            background-color: #ed881c;
+            /* orange */
+        }
+
+        .contributorBtn {
+            background-color: #dee516;
+            /* yellow */
+        }
+
+        .readerBtn {
+            background-color: #079634;
+            /* green */
+        }
+
+        .guestBtn {
+            background-color: #1b60d1;
+            /* blue */
+        }
+
+        .neighboursBtn {
+            background-color: white;
+            border-style: dotted;
+            border-color: black;
+            border-width: 2px;
+            width: 16px !important;
+            height: 16px !important;
+        }
+
+        #deviceView {
+            position: static;
+            /*width: 100%;*/
+            height: 100%;
+            /*border: 3px solid #aaaaaa;*/
+            margin: 0;
+            /*display: block;*/
+            z-index: 0;
+        }
+
+        #dialog {
+            width: 80%;
+            height: 80%;
+            border: 3px solid black;
+            border-radius: 30px;
+            z-index: 4;
+        }
+
+        #helper {
+            width: 50%;
+            height: 30%;
+            border: 3px solid black;
+            border-radius: 30px;
+            z-index: 4;
+        }
+
+        .infoCheckBox {
+            display: none;
+            /* Hidden by default */
+            left: calc(50% - 102px);
+            top: calc(50% - 142px);
+            position: absolute;
+            /* Stay in place */
+            z-index: 3;
+            /* Sit on top */
+            width: 200px;
+            height: 280px;
+            border: 2px solid black;
+            border-radius: 10px;
+        }
+
+        .tagHeader {
+            margin: auto;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            color: black;
+            text-align: center;
+            border-bottom: 2px solid black;
+        }
+
+        .middot {
+            display: block;
+            width: 20px;
+            height: 20px;
+            /*background-color: black;*/
+            border-radius: 25px;
+            margin-right: 10px;
+        }
+        /* The alert message box */
+
+        .alert {
+            background-color: #f44336;
+            /* Red */
+            color: white;
+            display: none;
+            /* Hidden by default */
+            /*margin-left: -100px;
+      margin-top: -140px;*/
+            left: calc(50% - 103px);
+            top: calc(50% - 143px);
+            position: absolute;
+            /* Stay in place */
+            z-index: 4;
+            /* Sit on top */
+            width: 206px;
+            height: 286px;
+            border-radius: 10px;
+        }
+        /* The close button */
+
+        .closebtn {
+            margin-top: 30%;
+            margin-right: 42%;
+            color: white;
+            font-weight: bold;
+            float: right;
+            font-size: 55px;
+            line-height: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .questionBtn {
+            margin-top: 30%;
+            margin-right: 42%;
+            color: white;
+            font-weight: bold;
+            float: right;
+            font-size: 25px !important;
+            line-height: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-right: 10px !important;
+        }
+
+        .alertText {
+            text-align: center;
+            margin-top: 45%;
+            margin-left: 15%;
+            margin-right: 15%;
+        }
+
+        .helperText {
+            text-align: center;
+            margin-top: 10%;
+            margin-left: 10%;
+            margin-right: 10%;
+            line-height: 30px;
+            font-size: 15pt;
+        }
+        /* When moving the mouse over the close button */
+
+        .closebtn:hover {
+            color: black;
+        }
+
+        #notifyTopRight,
+        #notifyTopLeft,
+        #notifyBottomLeft,
+        #notifyBottomRight,
+        #notifyLeftTop,
+        #notifyLeftBottom,
+        #notifyRightTop,
+        #notifyRightBottom {
+            background-color: #FF6666;
+            position: fixed;
+            display: block;
+            border-width: 0px;
+            z-index: 6;
+        }
+
+        #notifyLeftTop {
+            left: 0;
+            top: 30px;
+            height: calc(50% - 30px);
+            width: 30px;
+        }
+
+        #notifyLeftBottom {
+            left: 0;
+            bottom: 30px;
+            height: calc(50% - 30px);
+            width: 30px;
+        }
+
+        #notifyRightTop {
+            right: 0;
+            top: 30px;
+            height: calc(50% - 30px);
+            width: 30px;
+        }
+
+        #notifyRightBottom {
+            right: 0;
+            bottom: 30px;
+            height: calc(50% - 30px);
+            width: 30px;
+        }
+
+        #notifyTopLeft {
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 30px;
+        }
+
+        #notifyTopRight {
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 30px;
+        }
+
+        #notifyBottomLeft {
+            bottom: 0;
+            left: 0;
+            width: 50%;
+            height: 30px;
+        }
+
+        #notifyBottomRight {
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 30px;
+        }
+
+        #notify {
+            display: none;
+        }
+
+        .blackBtn {
+            color: black !important;
+            margin-top: 3%;
+            margin-right: 0%;
+            font-weight: bold;
+            float: right;
+            font-size: 40px;
+            line-height: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        #pendingSharetop,
+        #pendingSharebottom,
+        #pendingShareleft,
+        #pendingShareright {
+            display: none;
+            background-color: #3CBAD0;
+            border-width: 0;
+            position: fixed;
+            z-index: 30;
+        }
+
+        #pendingShareleft,
+        #pendingShareright {
+            top: calc(50% - 100px);
+            height: 200px;
+            width: 150px;
+            /*display: block;*/
+        }
+
+        #pendingShareleft {
+            left: 0;
+            border-bottom-right-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        #pendingShareright {
+            right: 0;
+            border-bottom-left-radius: 20px;
+            border-top-left-radius: 20px;
+        }
+
+        #pendingSharetop,
+        #pendingSharebottom {
+            left: calc(50% - 100px);
+            height: 150px;
+            width: 200px;
+        }
+
+        #pendingSharetop {
+            top: 0;
+            border-bottom-right-radius: 20px;
+            border-bottom-left-radius: 20px;
+        }
+
+        #pendingSharebottom {
+            bottom: 0;
+            border-top-right-radius: 20px;
+            border-top-left-radius: 20px;
+        }
+
+        .bounceTop {
+            -webkit-animation: bounceTop 1s infinite;
+            animation: bounceTop 1.6s infinite;
+        }
+        /* Scroll down indicator (bouncing) */
+
+        @-webkit-keyframes bounceTop {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -webkit-transform: translateY(0);
+            }
+            40% {
+                -webkit-transform: translateY(-30px);
+            }
+            60% {
+                -webkit-transform: translateY(-15px);
+            }
+        }
+
+        @-moz-keyframes bounceTop {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -moz-transform: translateY(0);
+            }
+            40% {
+                -moz-transform: translateY(-30px);
+            }
+            60% {
+                -moz-transform: translateY(-15px);
+            }
+        }
+
+        @keyframes bounceTop {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -webkit-transform: translateY(0);
+                -moz-transform: translateY(0);
+                -ms-transform: translateY(0);
+                -o-transform: translateY(0);
+                transform: translateY(0);
+            }
+            40% {
+                -webkit-transform: translateY(-30px);
+                -moz-transform: translateY(-30px);
+                -ms-transform: translateY(-30px);
+                -o-transform: translateY(-30px);
+                transform: translateY(-30px);
+            }
+            60% {
+                -webkit-transform: translateY(-15px);
+                -moz-transform: translateY(-15px);
+                -ms-transform: translateY(-15px);
+                -o-transform: translateY(-15px);
+                transform: translateY(-15px);
+            }
+        }
+
+        .bounceBottom {
+            -webkit-animation: bounceBottom 1s infinite;
+            animation: bounceBottom 1.6s infinite;
+        }
+        /* Scroll down indicator (bouncing) */
+
+        @-webkit-keyframes bounceBottom {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -webkit-transform: translateY(0);
+            }
+            40% {
+                -webkit-transform: translateY(+30px);
+            }
+            60% {
+                -webkit-transform: translateY(+15px);
+            }
+        }
+
+        @-moz-keyframes bounceBottom {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -moz-transform: translateY(0);
+            }
+            40% {
+                -moz-transform: translateY(+30px);
+            }
+            60% {
+                -moz-transform: translateY(+15px);
+            }
+        }
+
+        @keyframes bounceBottom {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -webkit-transform: translateY(0);
+                -moz-transform: translateY(0);
+                -ms-transform: translateY(0);
+                -o-transform: translateY(0);
+                transform: translateY(0);
+            }
+            40% {
+                -webkit-transform: translateY(+30px);
+                -moz-transform: translateY(+30px);
+                -ms-transform: translateY(+30px);
+                -o-transform: translateY(+30px);
+                transform: translateY(+30px);
+            }
+            60% {
+                -webkit-transform: translateY(+15px);
+                -moz-transform: translateY(+15px);
+                -ms-transform: translateY(+15px);
+                -o-transform: translateY(+15px);
+                transform: translateY(+15px);
+            }
+        }
+
+        .bounceLeft {
+            -webkit-animation: bounceLeft 1s infinite;
+            animation: bounceLeft 1.6s infinite;
+        }
+        /* Scroll down indicator (bouncing) */
+
+        @-webkit-keyframes bounceLeft {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -webkit-transform: translateX(0);
+            }
+            40% {
+                -webkit-transform: translateX(-30px);
+            }
+            60% {
+                -webkit-transform: translateX(-15px);
+            }
+        }
+
+        @-moz-keyframes bounceLeft {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -moz-transform: translateX(0);
+            }
+            40% {
+                -moz-transform: translateX(-30px);
+            }
+            60% {
+                -moz-transform: translateX(-15px);
+            }
+        }
+
+        @keyframes bounceLeft {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -webkit-transform: translateX(0);
+                -moz-transform: translateX(0);
+                -ms-transform: translateX(0);
+                -o-transform: translateX(0);
+                transform: translateX(0);
+            }
+            40% {
+                -webkit-transform: translateX(-30px);
+                -moz-transform: translateX(-30px);
+                -ms-transform: translateX(-30px);
+                -o-transform: translateX(-30px);
+                transform: translateX(-30px);
+            }
+            60% {
+                -webkit-transform: translateX(-15px);
+                -moz-transform: translateX(-15px);
+                -ms-transform: translateX(-15px);
+                -o-transform: translateX(-15px);
+                transform: translateX(-15px);
+            }
+        }
+
+        .bounceRight {
+            -webkit-animation: bounceRight 1s infinite;
+            animation: bounceRight 1.6s infinite;
+        }
+        /* Scroll down indicator (bouncing) */
+
+        @-webkit-keyframes bounceRight {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -webkit-transform: translateX(0);
+            }
+            40% {
+                -webkit-transform: translateX(+30px);
+            }
+            60% {
+                -webkit-transform: translateX(+15px);
+            }
+        }
+
+        @-moz-keyframes bounceRight {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -moz-transform: translateX(0);
+            }
+            40% {
+                -moz-transform: translateX(+30px);
+            }
+            60% {
+                -moz-transform: translateX(+15px);
+            }
+        }
+
+        @keyframes bounceRight {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                -webkit-transform: translateX(0);
+                -moz-transform: translateX(0);
+                -ms-transform: translateX(0);
+                -o-transform: translateX(0);
+                transform: translateX(0);
+            }
+            40% {
+                -webkit-transform: translateX(+30px);
+                -moz-transform: translateX(+30px);
+                -ms-transform: translateX(+30px);
+                -o-transform: translateX(+30px);
+                transform: translateX(+30px);
+            }
+            60% {
+                -webkit-transform: translateX(+15px);
+                -moz-transform: translateX(+15px);
+                -ms-transform: translateX(+15px);
+                -o-transform: translateX(+15px);
+                transform: translateX(+15px);
+            }
+        }
+
+        .customToolTip {
+            --paper-tooltip: {
+                font-size: 12px;
+                border-radius: 1000px;
+            }
+        }
+
+        #shareNow {
+            width: 70px;
+            height: 35px !important;
+            border-radius: 1000px;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 35px;
+            margin-top: 0px;
+        }
+
+        .point {
+            cursor: pointer;
+        }
+
+        .move {
+            cursor: move;
+        }
+
+        paper-button.green {
+            background-color: var(--paper-green-500);
+            color: white;
+        }
+
+        paper-button.red {
+            background-color: var(--paper-red-500);
+        }
+
+        paper-toggle-button#toggleOperation {
+            --paper-toggle-button-unchecked-bar-color: white;
+            --paper-toggle-button-checked-bar-color: white;
+            --paper-toggle-button-unchecked-ink-color: white;
+            --paper-toggle-button-checked-ink-color: white;
+            --paper-toggle-button-unchecked-button-color: white;
+            --paper-toggle-button-checked-button-color: white;
+        }
+
+        #usernameTag {
+            background-color: #FFC45F;
+            color: black;
+        }
+    </style>
+
+    <template>
+      <!-- HTML -->
+      <div id="pendingSharetop" class="bounceTop"></div>
+      <div id="pendingSharebottom" class="bounceBottom"></div>
+      <div id="pendingShareleft" class="bounceLeft"></div>
+      <div id="pendingShareright" class="bounceRight"></div>
+
+      <div id="notify">
+        <div id="notifyTopLeft"></div>
+        <div id="notifyTopRight"></div>
+        <div id="notifyBottomLeft"></div>
+        <div id="notifyBottomRight"></div>
+        <div id="notifyLeftTop"></div>
+        <div id="notifyLeftBottom"></div>
+        <div id="notifyRightTop"></div>
+        <div id="notifyRightBottom"></div>
+      </div>
+
+      <paper-toolbar id="header" data-step="1" data-position="bottom" data-intro="This is the setting menu">
+        <paper-button id="titleText" raised on-click="openDialog" class="point">Configure Device Position</paper-button>
+        <paper-button disabled id="usernameTag">{{myUsername}}</paper-button>
+        <paper-tab></paper-tab>
+        <paper-button on-click="migrateToggle">Migrate</paper-button>
+        <paper-toggle-button id="toggleOperation"></paper-toggle-button>
+        <paper-button on-click="cloneToggle">Clone</paper-button>
+        <paper-button id="shareNow" raised on-click="showShare" class="red point" data-step="2" data-position="bottom" data-intro="Enable/Disable the share button">Share</paper-button>
+        <paper-icon-button id="eye" icon="icons:settings" raised onclick="dialog.open()" data-step="3" data-position="bottom" data-intro="Click here to view the devices connected" class="point"></paper-icon-button>
+        <paper-icon-button id="help" icon="icons:help" onclick="introJs().setOption('showStepNumbers', false).start();" data-step="4" data-position="bottom" data-intro="View the tutorial" class="point"></paper-icon-button>
+        <!-- start helpers  -->
+        <paper-tooltip class="customToolTip" fit-to-visible-bounds="true" offset="11" style="margin-left:3px" for="titleText" position="bottom">Show devices connected</paper-tooltip>
+        <paper-tooltip class="customToolTip" fit-to-visible-bounds="true" offset="11" for="eye" position="bottom">Show devices connected</paper-tooltip>
+        <paper-tooltip class="customToolTip" fit-to-visible-bounds="true" offset="11" for="shareNow" position="bottom">Enable/Disable Share button</paper-tooltip>
+        <paper-tooltip class="customToolTip" fit-to-visible-bounds="true" offset="11" for="help" position="bottom">Helper</paper-tooltip>
+        <!-- end helpers -->
+      </paper-toolbar>
+
+      <paper-dialog id="dialog" modal>
+        <div id="deviceView" on-touchstart="tapDrop" on-drop="onDrop" on-dragover="dragOver" on-tap="hideInfos">
+            <span id="closeButton" class="closebtn blackBtn" dialog-confirm autofocus>
+              &times;
+            </span>
+            <span id="helpDevicesView" class="questionBtn blackBtn">
+              ?
+            </span>
+            <paper-tooltip class="customToolTip" fit-to-visible-bounds="true" style="margin-top:-3px" offset="5" for="closeButton" position="left">Close</paper-tooltip>
+            <template id="templateDevices" is="dom-repeat" items={{devices}} as="device">
+              <template id="subTemplateDevices" is="dom-if" if="{{addNew(device)}}">
+                <div id="{{idToName(device)}}" data-id$="{{device}}" data-index$="{{index}}" on-mouseover="nodeOver" on-mouseout="nodeOut" on-touchstart="showInfos" draggable="{{isAdmin(deviceId)}}" on-dragstart="dragStart" class$="{{setNodeClass(device)}}">
+                    {{getDeviceUsername(device, devicesListTemp)}}
+                <iron-icon id="{{idToTypeIcon(device)}}" class$="{{setIconClass(device)}}" icon="{{getDeviceIcon(device)}}">
+                </iron-icon></div>
+                <paper-tooltip class="customToolTip" style="marigin-left:-15px" fit-to-visible-bounds="true" offset="1" for="{{idToName(device)}}">type: {{getDeviceType(device)}}</paper-tooltip>
+                <div class="alert">
+                  <div class="alertText">At least one #admin has to be alive</div>
+                  <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                </div>
+                <div class="infoCheckBox" id="{{idToNameInfo(device)}}" class="move" draggable="true" on-dragstart="dragStart">
+                  <div class="tagHeader move">{{device}} tags</div>
+                  <paper-listbox multi id="{{idToNameTag(device)}}" attr-for-selected="name" class="move">
+                    <template is="dom-repeat" items={{tags}} as="tag">
+                      <paper-item name={{tag}}><div class$="{{setMiddotClass(tag)}}"></div>{{tag}}</paper-item>
+                    </template>
+                  </paper-listbox>
+                </div>
+                <paper-tooltip class="customToolTip" style="marigin-left:-15px" fit-to-visible-bounds="true" offset="8" position="top" for={{idToNameInfo(device)}}>Tags of the device</paper-tooltip>
+              </template>
+            </template>
+        </div>
+      </paper-dialog>
+
+      <paper-dialog id="helper" modal>
+        <span class="closebtn blackBtn" dialog-confirm autofocus> &times;</span>
+        <div class="helperText">Hello user! This is the CDP (Configure Device Position), where you can manage the devices connected with the app. Press the eye to begin the configurations.</div>
+      </peper-dialog>
+    </template>
+
+    <script>
+      Polymer({
+        is: 'liquid-component-spatial-configure',
+
+        behaviors: [LiquidBehavior],
+
+        properties: {
+          tabSelected: {
+              value: "0"
+          },
+
+          infoViewed: {
+              value: "none"
+          },
+
+          hide: {
+              type: Boolean,
+              value: true // init the value to true so it will be hidden on page load
+          },
+
+          tags: {
+              value: ['admin', 'editor', 'reader', 'guest', 'neighbours'],
+              liquid: true
+          },
+
+          myUsername: {
+            value: function() {
+                return Liquid.getUsername()
+            }
+          },
+
+          adminId: {
+              value: function() {
+                  return Object.keys(Liquid.getDevicesList())[0];
+              },
+              type: Object
+          },
+
+          deviceId: {
+              value: function() {
+                  return Liquid.getDeviceId()
+              }
+          },
+
+          devices: {
+              value: function() {
+                  return Object.keys(Liquid.getDevicesList());
+              },
+              type: Object
+          },
+
+          // object that contains all connected devices
+          // overDevs = {id: true, id: false}
+          overDevs: {
+              type: Object,
+              value: function() {
+                  return {}
+              },
+              liquid: true,
+              notify: true
+          },
+
+          // object that contains all connected devices
+          // overShare = {id: position, ...}
+          // positions: top, bottom, left, right
+          overShare: {
+              type: Object,
+              value: function() {
+                  return {}
+              },
+              liquid: true,
+              notify: true
+          },
+
+          // debug
+          pendingBool: {
+              type: Boolean,
+              value: false,
+              liquid: true,
+              notify: true
+          },
+
+          showShareBtn: {
+              type: Boolean,
+              value: false
+          },
+
+          devicesListTemp: {
+            value: function(){return Liquid.getDevicesList()}
+          },
+
+          // devicesInfo: {
+          //   value: function(){return Liquid.devicesInfo()}
+          // },
+
+          numberDevices: {
+              value: function() {
+                  return Object.keys(Liquid.getDevicesList()).length
+              }
+          },
+
+          renderFlag: {
+              value: false
+          },
+
+          tapped: {
+              value: null
+          },
+
+          singleTap: {
+            type: Boolean,
+            value: false
+          },
+
+          doubleTap: {
+            type: Boolean,
+            value: false
+          },
+
+          timeoutTap: {
+            value: null
+          },
+
+          clickCount: {
+            type: Boolean,
+            value: false
+          },
+
+          singleClickTimer: {
+            value: null
+          },
+
+          arrayData: {
+              type: Object,
+              // array of {id: 'dadsadas', tags: [], position: {left:1231, top:3123}}}
+              value: function() {
+                      return {};
+                  }
+                // Default value
+                // liquid: true,
+                // notify: true
+          },
+        },
+
+        observers: [
+          '_notifyScreen(overDevs.*)',
+          '_notifySharing(overShare.*)',
+          '_pendingBool(pendingBool.*)',
+          '_notifyShowShareBtn(showShareBtn)',
+          '_notifyClickCount(clickCount)'
+            // '_notifyArrayData(arrayData.*)'
+        ],
+
+        migrateToggle: function() {
+            this.$.toggleOperation.checked = false
+        },
+
+        cloneToggle: function() {
+            this.$.toggleOperation.checked = true
+        },
+
+        getToggleOperation: function() {
+            return this.$.toggleOperation.checked
+        },
+        
+        openDialog: function() {
+            dialog.open()
+        },
+
+        singleClick: function() {
+          console.log("single");
+        },
+
+        doubleClick: function() {
+          console.log("double");
+        },
+
+        tapEvent: function(){
+          console.log("final " +  this.clickCount);
+          if (this.clickCount == false) {
+            this.clickCount = true;
+              var singleClickTimer = setTimeout(function() {
+                  this.clickCount = false;
+                  console.log("single");
+              }, 400);
+          } else if (this.clickCount == true) {
+              clearTimeout(singleClickTimer);
+              this.clickCount = false;
+              console.log("double");
+          }
+        },
+
+        _notifyClickCount: function(count){
+          console.log("count is: " + count);
+        },
+        // tapEvent: function(d) {
+        //   console.log("tapEvent");
+        //   this.tapped = d;
+        //   this.timeoutTap = setTimeout(this.click_action(), 200)
+        // },
+
+        singleTapEvent: function() {
+          console.log("single tap");
+        },
+
+        doubleTapEvent: function(event) {
+          console.log("double tap");
+        },
+
+        /* return the class type + Btn */
+        setMiddotClass: function(tag) {
+            return "middot " + tag + "Btn"
+        },
+
+        setNodeClass: function(id) {
+          var nodeClass = "deviceBtn move ";
+          if (this.isMe(id)) nodeClass += "meBtn ";
+          if (this.isAdmin(id)) nodeClass += "adminBtn ";
+          else nodeClass += "guestBtn ";
+
+          return nodeClass
+        },
+
+        setIconClass: function(id) {
+          var iconClass = "";
+          if (this.isMe(id)) iconClass += "yellowIcon";
+          else iconClass += "whiteIcon";
+          return iconClass
+        },
+
+        showSetting: function() {
+          // console.log("show or hide graph");
+          if (this.$$('#deviceView').style.display == 'none' || this.$$('#deviceView').style.display == '') {
+              this.$$('#deviceView').style.display = 'block';
+              this.$$('#eye').setAttribute("icon", "icons:visibility-off");
+          } else {
+              this.$$('#deviceView').style.display = "none";
+              this.$$('#eye').setAttribute("icon", "icons:visibility");
+          }
+        },
+
+        getNodePosition: function(id) {
+          // on the left if negative -> on right otherwise
+          // console.log("admin: " + this.adminId);
+          if (id != undefined) {
+            var lr = this.parsePositionPx(this.arrayData[this.adminId].position.left) - this.parsePositionPx(this.arrayData[id].position.left);
+            // on top if negative -> on bottom otherwise
+            var tb = this.parsePositionPx(this.arrayData[this.adminId].position.top) - this.parsePositionPx(this.arrayData[id].position.top);
+            let pos1 = "right"
+            let pos2 = "bottom"
+
+            if (lr < 0) pos1 = "left";
+            if (tb < 0) pos2 = "top";
+
+            return this.isGreaterPosition(lr, tb) ? pos1 : pos2;
+          }
+        },
+
+        isGreaterPosition: function(lr, tb) {
+          return Math.abs(lr) > Math.abs(tb);
+        },
+
+        getNodesPosition: function(id) { //pos: String
+          var nodeInPos = {
+              "leftTop": [],
+              "leftBottom": [],
+              "rightTop": [],
+              "rightBottom": [],
+              "topLeft": [],
+              "topRight": [],
+              "bottomRight": [],
+              "bottomLeft": []
+          };
+
+          for (var i = 0; i < this.devices.length; i++) {
+            var node = this.devices[i];
+            if (node != id) { //remove for debug
+              // on the left if negative -> on right otherwise
+              var lr = this.parsePositionPx(this.arrayData[node].position.left) - this.parsePositionPx(this.arrayData[id].position.left);
+              // on top if negative -> on bottom otherwise
+              var tb = this.parsePositionPx(this.arrayData[node].position.top) - this.parsePositionPx(this.arrayData[id].position.top);
+              const nodeToPush = {
+                  "id": node,
+                  "tag": this.tags[this.getMostImportantTag(node)],
+                  'nickname': this.getDeviceUsername(node, this.devicesListTemp)
+              };
+
+              let pos1 = "right"
+              let pos2 = "bottom"
+
+              if (lr < 0) pos1 = "left";
+              if (tb < 0) pos2 = "top";
+
+              let pos1U = pos1[0].toUpperCase() + pos1.slice(1);
+              let pos2U = pos2[0].toUpperCase() + pos2.slice(1);
+              let finalPos;
+
+              this.isGreaterPosition(lr, tb) ? finalPos = pos1 + pos2U : finalPos = pos2 + pos1U;
+              nodeInPos[finalPos].push(nodeToPush);
+            } //comment for debug
+          }
+
+          return nodeInPos;
+        },
+
+        parsePositionPx: function(intpx) {
+          return parseFloat(intpx.slice(0, -2))
+        },
+
+        // tag check for colours
+        isTagAdmin: function(tagg) {
+          return tagg == "admin"
+        },
+
+        isTagEditor: function(tagg) {
+          return tagg == "editor"
+        },
+
+        isTagReader: function(tagg) {
+          return tagg == "reader"
+        },
+
+        isTagGuest: function(tagg) {
+          return tagg == "guest"
+        },
+
+        isTagNeighbours: function(tagg) {
+          return tagg == "neighbours"
+        },
+
+        compareTags: function(tag1, tag2) {
+          return tag1 == tag2
+        },
+
+        showShare: function() {
+          if (this.showShareBtn == false) {
+            this.$.shareNow.classList.remove('red')
+            this.$.shareNow.classList.add('green')
+            this.showShareBtn = true;
+            Liquid.triggerSpatialEvent('showUI')
+          } else {
+            this.$.shareNow.classList.remove('green')
+            this.$.shareNow.classList.add('red')
+            this.showShareBtn = false;
+            Liquid.triggerSpatialEvent('hideUI')
+          }
+        },
+
+        _notifyShowShareBtn(showBtn) {
+          // console.log(showBtn);
+          // return showBtn;
+        },
+
+        showInfos: function(e) {
+          // only ADMIN can see tags of others node and update them
+          if(false) {
+          // if (this.isAdmin(this.deviceId)) { // change to addNew  isAdmin to debug
+            var id = this.stripID(event.srcElement.id)
+                // console.log("clicked: " + id);
+            var idName = this.idToName(id);
+            var tagID = this.idToNameTag(id);
+            var modalDiv = this.idToNameModal(id);
+            var idInfoDiv = this.idToNameInfo(id);
+
+            // this.getNodesPositions(id);
+
+            // console.log("admins? " + this.adminExists());
+
+            this.$$('#' + idInfoDiv).style.background = "white";
+            this.$$('#' + tagID).style.background = "transparent";
+
+            this.$$('#' + idInfoDiv).style.display = "block";
+            this.infoViewed = idInfoDiv;
+
+            this.disableEvents();
+            this.$$('.deviceBtn').style.pointerEvents = 'none';
+            // this.$$('.deviceBtn').style.position = 'absolute';
+
+            this.$$('#' + tagID).selectedValues = this.getTags(id);
+          } else {
+            this.dataTransfer = e.target.getAttribute('id')
+          }
+
+          // var pos = this.getPosition(id);
+          // console.log("id: " + id);
+          // console.log("id.tags: " + this.getTags(id));
+          // console.log("position: " + pos.left + " - " + pos.top);
+          // console.log(this.arrayData);
+
+          // return id;
+        },
+
+        tapDrop: function(e) {
+            if(this.dataTransfer != undefined) {
+                var id = this.dataTransfer
+                var domEl = this.$$('#d' + id.split('d')[1]) || this.$$('#d' + id.split('h')[1])
+                var deviceID = this.stripID(id);
+
+                if (e.target.id == 'deviceView') {
+                    var left = e.touches[0].clientX - domEl.offsetWidth / 2 - e.target.getBoundingClientRect().left;
+                    var top = e.touches[0].clientY - domEl.offsetHeight / 2 - e.target.getBoundingClientRect().top;
+                    if (id[0] == 'i') {
+                        domEl.style.left = left + 'px'
+                        domEl.style.top = top + 'px'
+
+                        this.$$('.alert').style.left = left + 'px'
+                        this.$$('.alert').style.top = top + 'px'
+                    }
+                    else {
+                        if (deviceID in this.arrayData) {
+                            this.setPosition(deviceID, left + 'px', top + 'px')
+                            domEl.style.left = (left - 25) + 'px'
+                            domEl.style.top = (top - (domEl.dataset.index || 0) * domEl.offsetHeight) + 'px'
+                            // console.log(domEl.style.left, domEl.style.top);
+                        }
+                    }
+
+                    this.dataTransfer = undefined
+                }
+            }
+        },
+
+        // TODO: delete
+        // updateNode: function(id) {
+        //   console.log(id);
+        //   console.log(this.$$('#' + tagID).selectedValues);
+        // },
+
+        hideInfos: function() {
+          var deviceView = event.srcElement.id;
+          var deviceID;
+          if (deviceView == "deviceView") {
+              // console.log("admins? " + this.adminExists());
+
+            if (this.infoViewed != 'none') {
+              if (this.adminExists()) {
+                  this.$$('#' + this.infoViewed).style.display = "none";
+
+                  // disable everything behind the info
+                  this.enableEvents();
+
+                  deviceID = this.stripID(this.infoViewed);
+
+                  // remove classes less important and add the most important
+                  // this will change permits and also colours of nodes
+                  var tagIndex = this.getMostImportantTag(deviceID);
+
+                  var newClass;
+                  if (this.tags[tagIndex] != undefined) newClass = " " + this.tags[tagIndex] + "Btn";
+                  else newClass = " guestBtn";
+
+                  var node = this.$$('#' + this.idToName(deviceID));
+                  var classList = node.classList
+
+                  if (!this.hasClass(node, newClass)) {
+                      this.$$('#' + this.idToName(deviceID)).className += newClass;
+                      this.updateClass(node, this.stripID(newClass));
+                  }
+
+                  // enable and disable drag and drop
+                  if (this.isAdmin(this.deviceId)) this.enableDragNDrop();
+                  else this.disableDragNDrop();
+
+                  if (this.hasTag(this.deviceId, 'neighbours')) this.showNeighbours();
+                  else this.hideNeighbours();
+              } else this.$$('.alert').style.display = "block";
+            }
+          }
+        },
+
+        disableEvents: function() {
+          for (var i = 0; i < this.devices.length; ++i) {
+              this.$$('#' + this.idToName(this.devices[i])).style.pointerEvents = 'none';
+          }
+        },
+
+        enableEvents: function() {
+          for (var i = 0; i < this.devices.length; ++i) {
+              this.$$('#' + this.idToName(this.devices[i])).style.pointerEvents = 'auto';
+          }
+        },
+
+        disableDragNDrop: function() {
+          for (var i = 0; i < this.devices.length; ++i) {
+              this.$$('#' + this.idToName(this.devices[i])).setAttribute('draggable', 'false');
+          }
+        },
+
+        enableDragNDrop: function() {
+          for (var i = 0; i < this.devices.length; ++i) {
+              this.$$('#' + this.idToName(this.devices[i])).setAttribute('draggable', 'true');
+          }
+        },
+
+        hideNeighbours: function() {
+          for (var i = 0; i < this.devices.length; ++i) {
+              if (!this.isAdmin(this.devices[i]) || !this.isMe(this.devices[i]))
+                  this.$$('#' + this.idToName(this.devices[i])).style.display = 'none';
+          }
+        },
+
+        showNeighbours: function() {
+          for (var i = 0; i < this.devices.length; ++i) {
+              // if(!this.isAdmin(this.devices[i]) || !this.isMe(this.devices[i]))
+              this.$$('#' + this.idToName(this.devices[i])).style.display = 'block';
+          }
+        },
+
+        // at least one admin has to be present
+        adminExists: function() {
+          for (let i = 0; i < this.devices.length; ++i) {
+              if (this.hasTag(this.devices[i], "admin") == true) return true;
+          }
+          return false;
+        },
+
+        hasClass: function(element, newClass) {
+          return (' ' + element.className + ' ').indexOf(newClass + ' ') > -1;
+        },
+
+        updateClass: function(element, newClass) {
+          var classes = ["adminBtn", "editorBtn", "readerBtn", "guestBtn", "neighboursBtn"];
+          for (var i = 0; i < classes.length; i++) {
+              if (classes[i] != newClass) element.classList.remove(classes[i]);
+          }
+        },
+
+        getTags: function(id) {
+          if (id in this.arrayData) {
+              return this.arrayData[id].tags;
+          }
+        },
+
+        getMostImportantTag: function(id) {
+          return Math.min.apply(null, this.tagsToIndex(id));
+        },
+
+        hasTag: function(id, tag) {
+          for (var i = 0; i < this.getTags(id).length; i++) {
+            if (this.getTags(id)[i] == tag) {
+                // console.log(id +" is "+this.getTags(id)[i]);
+                return true;
+            }
+          }
+          return false;
+        },
+
+        removeTag: function(id, index) {
+          this.getTags(id).splice(0, index);
+          return this.arrayData[id].tags;
+        },
+
+
+        tagsToIndex: function(id) {
+          var tags = this.getTags(id);
+          var indexedTags = [];
+          if (tags != undefined) {
+            for (var i = 0; i < tags.length; i++) {
+              switch (tags[i]) {
+                case "admin":
+                  indexedTags.push(0);
+                  break;
+                case "editor":
+                  indexedTags.push(1);
+                  break;
+                case "reader":
+                  indexedTags.push(2);
+                  break;
+                case "guest":
+                  indexedTags.push(3);
+                  break;
+                case "neighbours":
+                  // indexedTags.push(4);
+                  break;
+                default:
+                  return indexedTags;
+              }
+            }
+            return indexedTags;
+          }
+        },
+
+        getPosition: function(id) {
+          if (id in this.arrayData) {
+            // console.log(this.arrayData[id].position);
+            return this.arrayData[id].position;
+          }
+        },
+
+        setPosition: function(id, left, top) {
+          // console.log(id + " setting new pos");
+          if (id in this.arrayData) {
+            this.arrayData[id].position.left = left;
+            this.arrayData[id].position.top = top;
+          }
+          return this.arrayData[id].position;
+        },
+
+        stripID: function(id) {
+          return id.substring(1);
+        },
+
+        /*
+         * returns index of the element if present
+         * -1 otherwise
+         */
+        isInArrayData: function(id) {
+          return (id in this.arrayData)
+        },
+
+        /*
+         * populateArrayData(id, tags, position)
+         * id: id of the device
+         * tags: array of tags []
+         * position: object of position top, left {}
+         * return: array updated
+         */
+        // TODO: add also deviceID
+        addDeviceToArray: function(deviceID, tags, position) {
+          var tags = tags;
+          var position = position;
+          var id = deviceID;
+          var type = this.getDeviceType(id);
+          // var type = "Phone"; // debug line
+          var device = {
+              tags: tags,
+              position: position,
+              type: type
+          };
+
+          if (this.isInArrayData(id) == false) {
+            console.log("added: " + id + "type: " + type);
+            this.arrayData[id] = device;
+          }
+
+          return this.arrayData
+        },
+
+        printArray: function() {
+          console.log(this.arrayData);
+        },
+
+        testSani: function() {
+          console.log('MingLee')
+        },
+
+        attached: function() {
+            let self = this
+          Liquid.registerSpatial(this)
+          Liquid.addEventListener('pairedDevicesListUpdate', this.deviceListUpdate.bind(this))
+          Liquid.addEventListener('spatial-username', function(e) {
+            self.myUsername = e
+          })
+        },
+
+        detached: function() {
+          Liquid.removeEventListener('pairedDevicesListUpdate', this.deviceListUpdate)
+        },
+
+        deviceListUpdate: function(list) {
+            // var copy = Object.assign({}, Liquid.getDevicesList());
+          this.fire('devicesUpdated', this.devices);
+          // console.log(Liquid.getDevicesInfoList())
+          // this.devices = Object.keys(list)
+          // this.set('devices', [])
+          // this.devices = Object.keys(copy)
+          this.set('devices', Object.keys(list))
+          // this.notifyPath('devices')
+          // this.push('devices', 'hello')
+          // this.notifyPath('devices')
+          // this.pop('devices')
+          // this.notifyPath('devices')
+          // this.$.templateDevices.render()
+          // this.$.subTemplateDevices.render()
+
+          this.devicesListTemp = list
+          this.numberDevices = Object.keys(list).length;
+          // console.log(this.numberDevices);
+          // this.updateOverDevs(this.devices);
+        },
+
+        deviceArrayUpdate: function(list) {
+          this.arrayData = Object.keys(list)
+        },
+
+        isAdmin: function(id) {
+          // return this.hasTag(id, "admin");
+          return true
+        },
+
+        getDeviceType: function(id) {
+          return Liquid.getDevicesInfoList()[id];
+        },
+
+        getDeviceUsername: function(id){
+            // console.log(id)
+            return this.devicesListTemp[id]
+        },
+
+        getDeviceIcon: function(id) {
+          var icon;
+          var deviceType = this.arrayData[id].type;
+
+          // console.log('###')
+          // console.log(id)
+          // console.log(this.devices)
+
+          if (this.isMe(id)) return "icons:star";
+
+          switch (deviceType) {
+            case "Desktop":
+              return "hardware:tv"
+              break;
+            case "Tablet":
+              return "hardware:tablet-mac"
+              break;
+            case "Phone":
+              return "hardware:phone-iphone"
+              break;
+            case "Phone/Tablet":
+              return "hardware:tablet-android"
+              break;
+            default:
+              return "icons:warning"
+          }
+        },
+
+        nodeOver: function(e) {
+          // console.log(this.overDevs);
+          var nOver = this.stripID(e.target.getAttribute('id'));
+          this.set('overDevs.' + nOver, true)
+              // console.log("over");
+              // console.log(this.overDevs);
+              // this.notifyScreen(nOver);
+        },
+
+        nodeOut: function(e) {
+          // console.log("out: " +  e.target.getAttribute('id'));
+          var nOver = this.stripID(e.target.getAttribute('id'));
+          this.set('overDevs.' + nOver, false)
+              // console.log("out: ");
+              // console.log(this.overDevs);
+              // this.notifyScreen(nOver);
+        },
+
+        _notifyArrayData: function(deviceChange) {
+          console.log(deviceChange);
+        },
+
+        /**
+         * see screen referred to node over
+         * move this where? To be called always
+         */
+        _notifyScreen: function(changes) {
+          // console.log("overDevs updtated with devices");
+          // console.log(">" + this.numberDevices);
+          // console.log(this.overDevs);
+          // TODO: Check tag to give permit to do this
+          var id = changes.path.split('.')[1]
+          var value = changes.value
+              // console.log(id)
+              // console.log(value)
+          if (value == true && this.isMe(id)) {
+            this.$$("#notify").style.display = "block";
+          } else {
+            this.$$("#notify").style.display = "none";
+          }
+        },
+
+        _pendingBool: function(pending) {
+          // console.log(pending.value);
+          if (!pending.value) { // debug
+            // console.log("hide everything");
+            this.$$("#pendingShareright").style.display = "none";
+            this.$$("#pendingShareleft").style.display = "none";
+            this.$$("#pendingSharetop").style.display = "none";
+            this.$$("#pendingSharebottom").style.display = "none";
+          }
+        },
+
+        getSenderZone: function(zone) {
+          console.log("> " + zone);
+          switch (zone) {
+            case "left":
+              return "right"
+              break;
+            case "right":
+              return "left"
+              break;
+            case "bottom":
+              return "top"
+              break;
+            case "top":
+              return "bottom"
+              break;
+            default:
+              return "bottom1"
+          }
+        },
+
+        _notifySharing: function(shareChanges) {
+          var id = shareChanges.path.split('.')[1]
+          var zone = shareChanges.value
+          // console.log(this.overShare);
+          // console.log(shareChanges);
+          // console.log(id + " in zone " + zone);
+          // console.log(id + " in zone " + this.getNodePosition(id));
+          // console.log(typeof(zone));
+
+          if (typeof(zone) == 'object') return;
+
+          if (zone != false && id != null && this.isMe(id)) {
+            // console.log("show pending opp: " + zone);
+            this.$$("#pendingShare" + this.getSenderZone(zone)).style.display = "block";
+          }
+          if (zone == false && this.isMe(id)) {
+            // console.log("hide opposite to: " + this.getNodePosition(id));
+            this.$$("#pendingShare" + this.getSenderZone(this.getNodePosition(id))).style.display = "none";
+          }
+        },
+
+        addNew: function(id) {
+          // console.log("type: " + this.getDeviceType(id));
+          if (id == this.adminId) {
+            //  ((window.getComputedStyle(this.$$('#deviceView'), null)["width"].slice(0, -2)/2) + 'px')
+            // ((window.getComputedStyle(this.$$('#deviceView'), null)["height"].slice(0, -2)/2) + 'px')
+            this.addDeviceToArray(id, ['admin', 'neighbours'], {
+                left: '50px',
+                top: '50px'
+            })
+            return true
+          } else {
+            this.addDeviceToArray(id, ['guest'], {
+                    left: '50px',
+                    top: '50px'
+            })
+            // return false
+          }
+
+          return true
+        },
+
+        isMe: function(id) {
+          if (id == this.deviceId) return true
+          return false
+        },
+
+        idToName: function(device) {
+          return 'd' + device
+        },
+
+        idToNameInfo: function(device) {
+          return 'i' + device
+        },
+
+        idToTypeIcon: function(device) {
+          // h stays for hardware
+          return 'h' + device
+        },
+
+        idToNameTag: function(device) {
+          return 't' + device
+        },
+
+        idToNameModal: function(device) {
+          return 'm' + device
+        },
+
+        dragStart: function(e) {
+          e.dataTransfer.setData('device', e.target.getAttribute('id'));
+        },
+
+        dragOver: function(e) {
+          e.preventDefault()
+        },
+
+        pixelTopercentage: function(pixels, side) {
+          if (side == 'width') var screenPixels = this.parsePositionPx(window.getComputedStyle(this.$$('#deviceView')).width);
+          else var screenPixels = this.parsePositionPx(window.getComputedStyle(this.$$('#deviceView')).height);
+          var percentage = (screenPixels - pixels) / screenPixels; // 0.92%
+          console.log("in % : " + percentage);
+        },
+
+        onDrop: function(e) {
+          var id = e.dataTransfer.getData('device')
+          var domEl = this.$$('#' + id)
+          var deviceID = this.stripID(id);
+          // console.log("old:");
+          // console.log(id);
+
+          if (e.target.id == 'deviceView') {
+            var left = e.offsetX - domEl.offsetWidth / 2;
+            var top = e.offsetY - domEl.offsetHeight / 2;
+            // console.log(e.offsetY);
+            // info moved
+            // console.log("->" + e.offsetX);
+            // console.log("->" + left);
+            // console.log("->" + e.offsetY);
+            // console.log("->" + top);
+            if (id[0] == 'i') {
+              domEl.style.left = left + 'px'
+              domEl.style.top = top + 'px'
+
+              this.$$('.alert').style.left = left + 'px'
+              this.$$('.alert').style.top = top + 'px'
+
+              // console.log(domEl.style.left, domEl.style.top);
+            }
+            // node moved
+            else {
+              // this.pixelTopercentage(left, 'width')
+              if (deviceID in this.arrayData) {
+                this.setPosition(deviceID, left + 'px', top + 'px')
+                domEl.style.left = (left - 25) + 'px'
+                domEl.style.top = (top - (domEl.dataset.index || 0) * domEl.offsetHeight) + 'px'
+                // console.log(domEl.style.left, domEl.style.top);
+              }
+            }
+          }
+        }
+      });
+    </script>
+
+</dom-module>

@@ -1,0 +1,34 @@
+doctype html
+html
+	head
+		style.
+			.link {
+			  stroke: #aaa;
+			}
+
+			.node circle {
+				stroke: #fff;
+			  stroke-width: 2px;
+			}
+
+			.node text {
+			  display: none;
+			  font: 10px sans-serif;
+			}
+			.node:hover circle {
+			  stroke: #aaa;
+			}
+
+			.node:hover text {
+			  display: inline;
+			}
+
+	body(unresolved onload="load()")
+		div#title.
+			#{title}
+		
+		script.
+			var data = !{JSON.stringify(data)}
+
+		script(src="/components/graph/d3.v3.min.js")
+		script(src="/components/corescripts/graph_visualiser.js")

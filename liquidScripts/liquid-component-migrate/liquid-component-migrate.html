@@ -1,0 +1,417 @@
+<link rel="import" href="../neon-animation/neon-animations.html">
+
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+
+<dom-module id="liquid-component-migrate">
+  <style is="custom-style">
+    #toolbar {
+      margin:0px;
+      --paper-toolbar-height: 70px;
+      --paper-toolbar-color: white;
+      --paper-toolbar-background: #444;
+    }
+
+    #showList {
+      --iron-icon-stroke-color: none;
+      --iron-icon-fill-color: white;
+      --iron-icon-height: 15px;
+      --iron-icon-width: 15px;
+    }
+
+    #migrationList, #migrationListFrame, .device-item, .liquid-operation-button {
+      padding: 0px;
+      margin: 0px;
+      height: 100px;
+    }
+
+    #migrationList, #migrationListFrame {
+      width: 100%;
+    }
+
+    #migrationListFrame {
+      overflow-x:auto;
+      overflow-y:hidden;
+      white-space: nowrap;
+    }
+
+    .device-item {
+      display:inline-block;
+      width: 150px;
+    }
+
+    .device-item {
+      list-style-type: none;
+    }
+
+    .liquid-operation-name {
+      width: 148px;
+      border-bottom: 1px solid black;
+      border-right: 2px solid black;
+      text-align: center;
+      word-wrap: normal;
+    }
+
+    .liquid-operation-button {
+      width: 74px;
+      height: 40px;
+      float: left;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .liquid-operation-button-right {
+      border-right: 2px solid black;
+    }
+
+    .liquid-operation-box {
+      margin: 0 auto;
+      width: 60px;
+      height: 30px;
+      border:1px solid black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+  <template>
+    <div id="migrationList">
+      <div id="migrationListFrame">
+        <template is="dom-repeat" items="{{devicesToArray(devices)}}" as="item">
+          <div class="device-item" value="{{item.id}}">
+            <div class="liquid-operation-name">{{item.id}}</div>
+            <div class="liquid-operation-button">
+              <div class="liquid-operation-box" data-liquid-operation="migrate" on-drop="onDrop" on-dragover="onAllowDrop" on-touchend="onTouch">
+                Move
+              </div>
+            </div>
+            <div class="liquid-operation-button liquid-operation-button-right">
+              <div class="liquid-operation-box" data-liquid-operation="fork" on-drop="onDrop" on-dragover="onAllowDrop">
+                Fork
+              </div>
+            </div>
+            <div class="liquid-operation-button">
+              <div class="liquid-operation-box" data-liquid-operation="clone" on-drop="onDrop" on-dragover="onAllowDrop">
+                Clone
+              </div>
+            </div>
+            <div class="liquid-operation-button liquid-operation-button-right">
+              <div class="liquid-operation-box" data-liquid-operation="delete" on-drop="onDrop" on-dragover="onAllowDrop">
+
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+    <paper-toolbar id="toolbar">
+      <paper-spinner id="spinner"></paper-spinner>
+      <paper-icon-button id="connectionState" icon="communication:call-end" style="color:red;"></paper-icon-button>
+      <iron-icon id="showList" icon="icons:expand-more" on-click="toggleToolbar"></iron-icon>
+      <span>{{deviceId}}</span>
+
+      <span class="flex"></span>
+
+      <paper-icon-button icon="icons:add" on-click="loadAndAddComponent"></paper-icon-button>
+      <paper-icon-button id="liquiduiIcon" icon="icons:account-box" on-click="toggleliquidui"></paper-icon-button>
+
+      <paper-dropdown-menu label="Devices" style="display:none">
+        <paper-menu class="dropdown-content" id="devicesDropdown" attr-for-selected="device" selected="{{selectedDevice}}">
+          <template is="dom-repeat" items="{{devicesToArray(devices)}}" as="item">
+            <paper-item device="[[item.id]]">[[item.username]]</paper-item>
+          </template>
+        </paper-menu>
+      </paper-dropdown-menu>
+
+      <paper-dropdown-menu label="Components">
+        <paper-menu class="dropdown-content" id="componentsDropdown" attr-for-selected="component" selected="{{selectedComponent}}">
+          <template is="dom-repeat" items="{{componentsToArray(components)}}" as="item">
+            <paper-item component="[[item.name]]">{{item.name}}</paper-item>
+          </template>
+        </paper-menu>
+      </paper-dropdown-menu>
+    </paper-toolbar>
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-component-migrate',
+
+      behaviors: [
+        LiquidBehavior,
+        Polymer.NeonAnimationRunnerBehavior
+      ],
+
+      properties: {
+        deviceId: {
+          value: function(){return Liquid.getDeviceId()}
+        },
+        devices: {
+          value: function(){return Liquid.getDevicesList();},
+          type: Object
+        },
+        components: {
+          value: function(){return Liquid.getLoadableComponents()}
+        },
+        selectedDevice: {
+          value: 0
+        },
+        selectedComponent: {
+          value: 0
+        },
+        opened: {
+          value: false,
+          type: Boolean
+        },
+        liquiduiIcon: {
+          value: true,
+          type: Boolean
+        },
+        animationLock: {
+          value: false,
+          type: Boolean
+        },
+        animationConfig: {
+          value: function() {
+            return {
+              'entry': {
+                name: 'slide-from-top-animation',
+                node: this.$.migrationList
+              },
+              'exit': {
+                name: 'slide-up-animation',
+                node: this.$.migrationList
+              }
+            }
+          }
+        }
+      },
+      listeners: {
+        'neon-animation-finish': '_onNeonAnimationFinish'
+      },
+
+      attached: function() {
+        Liquid.addEventListener('loadingChange', this.toggleSpinner.bind(this))
+        Liquid.addEventListener('connect', this.connectedDevice.bind(this))
+        Liquid.addEventListener('disconnect', this.toggleConnectButtonOff.bind(this))
+        Liquid.addEventListener('reconnect', this.toggleConnectButtonOn.bind(this))
+        Liquid.addEventListener('pairedDevicesListUpdate', this.updateDeviceList.bind(this))
+        Liquid.addEventListener('loadableComponentsListUpdate', this.updateComponentList.bind(this))
+
+        this.$.liquiduiIcon.style.color = 'green'
+        this.$.migrationList.style.display = 'none'
+
+        if(Liquid.getConnectionState()) {
+          this.toggleConnectButtonOn()
+        }
+      },
+
+      detached: function() {
+        Liquid.removeEventListener('loadingChange', this.toogleSpinner)
+        Liquid.removeEventListener('connect', this.connectedDevice)
+        Liquid.removeEventListener('disconnect', this.toggleConnectButtonOff)
+        Liquid.removeEventListener('reconnect', this.toggleConnectButtonOn)
+        Liquid.removeEventListener('pairedDevicesListUpdate', this.updateDeviceList)
+        Liquid.removeEventListener('loadableComponentsListUpdate', this.updateComponentList.bind(this))
+      },
+
+
+
+      _onNeonAnimationFinish: function() {
+        if (!this.opened) {
+          this.$.migrationList.style.display = 'none';
+        }
+        this.animationLock = false;
+      },
+
+      toggleToolbar: function() {
+        if(this.opened) {
+          this.hide()
+          this.$.showList.icon = 'icons:expand-more'
+        } else {
+          this.show()
+          this.$.showList.icon = 'icons:expand-less'
+        }
+      },
+
+      updateDeviceList: function(devicesList) {
+        this.devices = devicesList
+      },
+
+      updateComponentList: function(componentList) {
+        this.components = componentList
+      },
+
+      loadAndAddComponent: function(e) {
+        var device = undefined
+        var componentName = undefined
+
+        if(this.$.devicesDropdown.selectedItem) {
+          device = this.$.devicesDropdown.selectedItem.device
+        }
+
+        if(this.$.componentsDropdown.selectedItem){
+          componentName = this.$.componentsDropdown.selectedItem.component
+        }
+
+        if(componentName && componentName != 'Components') {
+          var liquidui = undefined
+          if(this.liquiduiIcon) {
+            liquidui = 'default'
+          } else {
+            liquidui = ''
+          }
+
+          Liquid.loadAndCreateComponent(componentName, document.querySelector('body'), {'liquidui': liquidui})
+        }
+      },
+
+      devicesToArray: function(devices) {
+        // var a = [{id: '_liquidBroadcast', username: 'Broadcast'}]
+        var a = []
+        for(var d in  devices) {
+          a.push({id: d, username: devices[d]})
+        }
+        return a
+      },
+
+      componentsToArray: function(components) {
+        var a = [{id: undefined, name: 'Components'}]
+        for(var c in components) {
+          a.push({id: c, name: components[c]})
+        }
+        return a
+      },
+
+      idToString: function(id) {
+        return id.toString()
+      },
+
+      onAllowDrop: function(e) {
+          e.preventDefault();
+      },
+
+      onDrop: function(e) {
+        var deviceId = e.target.parentNode.parentNode.value
+        var operation = e.target.dataset.liquidOperation
+        var fromURL = JSON.parse(e.dataTransfer.getData("liquidUrl"))
+        var fromUI = JSON.parse(e.dataTransfer.getData("liquidui"))
+        var fromState = JSON.parse(e.dataTransfer.getData("liquidStorage"))
+        // var liquidPairings = JSON.parse(e.dataTransfer.getData("liquidPairings"))
+
+        var toURL = {
+          device: deviceId
+        }
+
+        var message = {
+          from: fromURL,
+          to: toURL,
+          target: {
+            device: toURL.device
+          },
+          operation: operation,
+          data: {
+            liquidui: fromUI,
+            liquidStorage: fromState,
+            // liquidPairings: liquidPairings
+          }
+        }
+
+        switch(operation) {
+          case 'migrate':
+            Liquid.migrateComponent(fromURL, toURL, message)
+            break;
+          case 'fork':
+            Liquid.forkComponent(fromURL, toURL, message)
+            break;
+          case 'clone':
+            Liquid.cloneComponent(fromURL, toURL, message)
+            break;
+          case 'delete':
+            Liquid.deleteComponent(fromURL, toURL, message)
+            break;
+          default:
+            break;
+        }
+      },
+
+      onTouch: function(e) {
+        var lastTouched = Liquid.getLastTouch()
+
+        var deviceId = e.target.parentNode.parentNode.value
+        var operation = e.target.dataset.liquidOperation
+        var fromURL = lastTouched.liquidURL
+        var fromUI = lastTouched.liquidui
+        var fromState = lastTouched.liquidStorage
+
+        var toURL = {
+          device: deviceId
+        }
+
+        var message = {
+          from: fromURL,
+          to: toURL,
+          target: {
+            device: toURL.device
+          },
+          operation: operation,
+          data: {
+            liquidui: fromUI,
+            liquidStorage: fromState,
+            // liquidPairings: liquidPairings
+          }
+        }
+
+        switch(operation) {
+          case 'migrate':
+            Liquid.migrateComponent(fromURL, toURL, message)
+            break;
+          case 'fork':
+            Liquid.forkComponent(fromURL, toURL, message)
+            break;
+          case 'clone':
+            Liquid.cloneComponent(fromURL, toURL, message)
+            break;
+          case 'delete':
+            Liquid.deleteComponent(fromURL, toURL, message)
+            break;
+          default:
+            break;
+        }
+      },
+
+      toggleliquidui: function() {
+        if(this.liquiduiIcon) {
+          this.liquiduiIcon = false
+          this.$.liquiduiIcon.style.color = 'red'
+        } else {
+          this.liquiduiIcon = true
+          this.$.liquiduiIcon.style.color = 'green'
+        }
+      },
+
+      toggleSpinner: function(loading) {
+        if(loading) {
+          this.$.spinner.active = true
+        } else {
+          this.$.spinner.active = false
+        }
+      },
+
+      connectedDevice: function(deviceId, components) {
+        // updateComponents(components)
+        this.toggleConnectButtonOn()
+      },
+
+      toggleConnectButtonOff: function () {
+        this.$.connectionState.icon = 'communication:call-end'
+        this.$.connectionState.style.color = 'red'
+      },
+
+      toggleConnectButtonOn: function () {
+        this.$.connectionState.icon = 'communication:call'
+        this.$.connectionState.style.color = 'green'
+      }
+    });
+  </script>
+</dom-module>

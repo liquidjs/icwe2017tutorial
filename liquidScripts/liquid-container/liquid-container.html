@@ -1,0 +1,62 @@
+<script>
+    LiquidContainer = {
+
+      properties: {
+        __defaultLiquidChildComponents: {
+          value: function() {return []}
+        },
+
+        __addedLiquidChildComponents: {
+          value: function() {return []}
+        }
+      },
+
+      ready: function() {
+        var childs = this.childNodes
+
+        this._recursiveDetectLiquidComponents(childs)
+      },
+
+      attached: function() {},
+
+      _recursiveDetectLiquidComponents: function(childs) {
+        for(var i = 0; i < childs.length; i++){
+          var c = childs[i]
+          if(c && c.__liquidComponentUrl) {
+            this.__defaultLiquidChildComponents.push(c.__liquidComponentUrl)
+          } else if (c.childNodes) {
+            this._recursiveDetectLiquidComponents(c.childNodes)
+          }
+        }
+      },
+
+      _isContainerComponent: function() {
+        return true
+      },
+
+      _notifyAddComponent: function(url, element, liquidui) {
+        var isDefault = false;
+        for(var i = 0; i < this.__defaultLiquidChildComponents.length; i++) {
+          if(this.__defaultLiquidChildComponents[i].componentRef == url.componentRef) {
+            isDefault = true 
+          }
+        }
+
+        if(!isDefault) {
+          var o = Object.assign({}, url)
+          o.data = {
+            liquidui: liquidui,
+            element: element
+          }
+          this.__addedLiquidChildComponents.push(o)
+        }
+      },
+
+      _getLiquidChildComponents: function() {
+        return {
+          default: this.__defaultLiquidChildComponents,
+          added: this.__addedLiquidChildComponents
+        }
+      }
+    };
+</script>

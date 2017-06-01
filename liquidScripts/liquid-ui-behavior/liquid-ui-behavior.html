@@ -1,0 +1,265 @@
+<script>
+    LiquidUIBehavior = {
+      properties: {
+        liquiduiType: {
+          type: String,
+          notify: true
+        },
+
+        liquidname: {
+          type: Object,
+          notify: true
+        },
+
+        liquidComponentUrl: {
+          type: Object,
+          notify: true
+        },
+
+        liquidComponentType: {
+          type: String,
+          notify: true
+        },
+
+        liquidPrimitives: {
+          type: Array,
+          value: function() { return [] },
+          notify: true
+        },
+
+        liquidArrays: {
+          type: Array,
+          value: function() { return [] },
+          notify: true
+        },
+
+        liquidObjects: {
+          type: Array,
+          value: function() { return [] },
+          notify: true
+        },
+
+        devices: {
+          value: function(){return Liquid.getDevicesList();},
+          type: Object
+        },
+
+        devicesInfo: {
+          value: function(){return Liquid.getDevicesInfoList();},
+          type: Object
+        },
+      },
+
+      attached: function() {
+        this.computeLiquidDepth(this.liquidComponentUrl)
+        Liquid.addEventListener('pairedDevicesListUpdate', this.updateDeviceList.bind(this))
+
+        this.parentNode._updateLiquidVariablesLists()
+      },
+
+      detached: function() {
+        Liquid.removeEventListener('pairedDevicesListUpdate', this.updateDeviceList)
+      },
+
+      devicesToArray: function(devicesInfo) {
+        // var a = [{id: '_liquidBroadcast', username: 'Broadcast'}]
+        var a = []
+        for(var d in  devicesInfo) {
+          a.push({id: d, username: d, type: devicesInfo[d]})
+        }
+
+        return a
+      },
+
+      updateDeviceList: function(devicesList, devicesInfo) {
+        this.devices = devicesList
+        this.devicesInfo = devicesInfo
+      },
+
+      onDrag: function (e) {
+        var url = this.liquidComponentUrl
+        var parent = this.parentNode
+        
+        e.dataTransfer.setData("liquidURL", JSON.stringify(url));
+        e.dataTransfer.setData("liquidui", this.liquiduiType);
+        e.dataTransfer.setData("liquidStorage", JSON.stringify(parent.getLiquidVariablesValue()));
+        e.dataTransfer.setData("isContainer", parent._isContainerComponent())
+        e.dataTransfer.setData("liquidChildComponents", JSON.stringify(parent._getLiquidChildComponents()))
+        // e.dataTransfer.setData("liquidPairings", JSON.stringify(this.parentNode.getLiquidPairings()))
+      },
+
+      onTouch: function(e) {
+        Liquid.setLastTouch(this.liquidComponentUrl, true, this.parentNode.getLiquidVariablesValue())
+      },
+
+      onClose: function(e) {
+        Liquid.closeComponent(this.liquidComponentUrl)
+      },
+
+      onBroadCastFork: function(e) {
+        for(var device in this.devicesInfo) {
+          if(Liquid.getDeviceId() != device) {
+            this.onOperation(e, {
+              identifier: device,
+              operation: 'fork'
+            })
+          }
+        }
+      },
+
+      onOperation: function(e, data) {
+        if(data == 1)
+          data = e.target.dataset
+
+        var deviceId = data.identifier
+        var operation = data.operation
+        var fromURL = this.liquidComponentUrl
+        var fromUI = this.liquiduiType
+        var fromState = this.parentNode.getLiquidVariablesValue()
+        var isContainer = this.parentNode._isContainerComponent()
+        var childComponents = this.parentNode._getLiquidChildComponents()
+
+        var roomToken = this.parentNode.roomToken
+        
+        var toURL = {
+          device: deviceId
+        }
+
+        const target = {
+          device: toURL.device,
+          element: data.target
+        }
+
+        const messageData = {
+          liquidui: fromUI,
+          liquidStorage: fromState,
+          isContainer: isContainer,
+          liquidChildComponents: childComponents
+        }
+
+        let message = undefined
+        switch(operation) {
+          case 'migrate':
+            message = Liquid.createMessage(fromURL, toURL, 'migrate', target, messageData)
+            Liquid.migrateComponent(fromURL, toURL, message)
+            break;
+          case 'fork':
+            message = Liquid.createMessage(fromURL, toURL, 'fork', target, messageData)
+            Liquid.forkComponent(fromURL, toURL, message)
+            break;
+          case 'clone':
+            message = Liquid.createMessage(fromURL, toURL, 'clone', target, messageData)
+            Liquid.cloneComponent(fromURL, toURL, message)
+            break;
+          case 'delete':
+            message = Liquid.createMessage(fromURL, toURL, 'delete', target, messageData)
+            Liquid.deleteComponent(fromURL, toURL, message)
+            break;
+          case 'cloneHide':
+            message = Liquid.createMessage(fromURL, toURL, 'cloneHide', target, messageData)
+            Liquid.cloneAndHideComponent(fromURL, toURL, message)
+            break;
+          default:
+            break;
+        }
+      },
+
+      typeToIcon: function(type) {
+        var typeIcon = ""
+
+        if(type == 'Desktop') {
+          typeIcon = 'hardware:desktop-windows'
+        } else if (type == 'Tablet') {
+          typeIcon = 'hardware:tablet-android'
+        } else if (type == 'Phone' || type == 'Phone/Tablet'){
+          typeIcon = 'hardware:smartphone'
+        } else {
+          typeIcon = 'icons:report-problem'
+        }
+
+        return typeIcon
+      },
+
+      computeLiquidDepth: function(url) {
+        if(!url) {
+          return ""
+        }
+        
+        var node = this.parentNode.parentNode
+        var depth = 0
+        
+        while(node != undefined) {
+          if(node._isContainerComponent && node._isContainerComponent()) {
+            depth++
+          }
+
+          node = node.parentNode
+        }
+
+        this.liquidDepth = depth
+      },
+
+      depthToString: function(depth) {
+        var s = ""
+        for(var i = 0; i < depth; i++){
+          s += "> "
+        }
+        return s
+      },
+
+      isContained: function() {
+        return this.parentNode._isInsideLiquidContainer()
+      },
+
+      isNotThisDevice: function(item) {
+        // return Liquid.getDeviceId() != item.id
+        return true
+      },
+
+      updateLiquidPrimitives: function(newArray) {
+        this.liquidPrimitives = newArray.slice()
+      },
+
+      updateLiquidArrays: function(newArray) {
+        this.liquidArrays = newArray.slice()
+      },
+
+      updateLiquidObjects: function(newArray) {
+        this.liquidObjects = newArray.slice()
+      },
+
+      copyURL: function(e) {
+        function copytext(text) {
+          var textField = document.createElement('textarea');
+          textField.innerText = text;
+          document.body.appendChild(textField);
+          textField.select();
+          document.execCommand('copy');
+          textField.remove();
+        }
+
+        for(var i = 0; i < e.target.childNodes.length; i++) {
+          if(e.target.childNodes[i].nodeName == 'PAPER-INPUT') {
+            copytext(e.target.childNodes[i].value)
+            break;
+          }
+        }
+      },
+
+      variableToURL: function(item) {
+        return JSON.stringify(Object.assign({variable: item}, this.liquidComponentUrl))
+      },
+
+      updateName: function(name) {
+        this.liquidname = name
+      },
+
+      displayName: function(compName) {
+        if(compName != undefined && compName != '') {
+          return compName
+        }
+
+        return this.liquidComponentType
+      }
+    };
+</script>

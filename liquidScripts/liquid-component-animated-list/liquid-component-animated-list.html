@@ -1,0 +1,75 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+
+<link rel="import" href="/bower_components/neon-animation/neon-animations.html">
+
+<dom-module id="liquid-component-animated-list">
+  <style>
+  </style>
+  <template>
+     <div>Ciao</div>
+     <div>Pimmi</div>
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-component-animated-list',
+      
+      behaviors: [
+        Polymer.NeonAnimationRunnerBehavior
+      ],
+      properties: {
+        opened: {
+          value: false,
+          type: Boolean
+        },
+        animationLock: {
+          value: false,
+          type: Boolean
+        },
+        animationConfig: {
+          value: function() {
+            return {
+              'entry': {
+                name: 'slide-from-top-animation',
+                node: this
+              },
+              'exit': {
+                name: 'slide-up-animation',
+                node: this
+              }
+            }
+          }
+        }
+      },
+      listeners: {
+        'neon-animation-finish': '_onNeonAnimationFinish'
+      },
+      attached: function() {
+        this.style.display = 'none'
+      },
+
+      show: function() {
+        if(!this.animationLock) {
+          this.animationLock = true;
+          this.opened = true;
+          this.style.display = 'inline-block';
+          this.playAnimation('entry');
+        }
+      },
+
+      hide: function() {
+        if(!this.animationLock) {
+          this.animationLock = true;
+          this.opened = false;
+          this.playAnimation('exit');
+        }
+      },
+
+      _onNeonAnimationFinish: function() {
+        if (!this.opened) {
+          this.style.display = 'none';
+        }
+        this.animationLock = false;
+      }
+    });
+  </script>
+</dom-module>

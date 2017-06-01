@@ -1,0 +1,323 @@
+<link rel="import" href="/polymer/polymer.html">
+
+<link rel="import" href="/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="/paper-button/paper-button.html">
+<link rel="import" href="/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="/neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="/neon-animation/animations/fade-out-animation.html">
+
+<dom-module id="liquid-component-picture">
+  <style is="custom-style">
+    :root {
+      width: 340px;
+      text-align: center;
+    }
+
+    #picture {
+      background-color: white;
+    }
+
+    #picture img {
+      margin-left: auto;
+      margin-right: auto;
+      padding: 20px;
+      width: 300px;
+      height: 240px;
+    }
+
+    .polaroid {
+      -webkit-transition: -webkit-transform .15s linear;
+
+      -webkit-box-shadow: 0 3px 6px rgba(0,0,0,.25);
+      -moz-box-shadow: 0 3px 6px rgba(0,0,0,.25);
+    }
+     
+    .polaroid:hover{
+      -webkit-box-shadow: 0 3px 6px rgba(0,0,0,.5);
+      -moz-box-shadow: 0 3px 6px rgba(0,0,0,.5);
+    }
+
+    .pin {
+      background-color: #aaa;
+      background-image: linear-gradient(left, hsla(0,0%,100%,.2), hsla(0,0%,0%,.2));
+      display: block;
+      height: 2em;
+      left: 50%;
+      margin: -1em -.05em;
+      position: relative;
+      top: 10%;
+      width: .1em;
+    }
+
+    .pin:after {
+      content: '';
+      background-image: radial-gradient(25% 25%, circle, hsla(0,0%,100%,.2), hsla(0,0%,0%,.2));
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 1px hsla(0,0%,0%,.1),
+                  inset .2em .2em .2em hsla(0,0%,100%,.2),
+                  inset -.2em -.2em .2em hsla(0,0%,0%,.2),
+                  1.5em 1.25em .25em hsla(0,0%,0%,.15);
+      height: .8em;
+      left: -.35em;
+      position: relative;
+      top: -.65em;
+      width: .8em;
+    }
+
+    .pin.red:after {
+      background-color: red;
+    }
+
+    .pin.green:after {
+      background-color: green;
+    }
+
+    .pin.blue:after {
+      background-color: blue;
+    }
+
+    .pin.skyBlue:after {
+      background-color: skyBlue;
+    }
+
+    .pin.crimson:after {
+      background-color: crimson;
+    }
+
+    .pin.darkSeaGreen:after {
+      background-color: darkSeaGreen;
+    }
+
+    .pin.lightGreen:after {
+      background-color: lightGreen;
+    }
+
+    .pin.tomato:after {
+      background-color: tomato;
+    }
+
+    .pin:before {
+      background-color: hsla(0,0%,0%,.1);
+      box-shadow: 0 0 .25em hsla(0,0%,0%,.1);
+      content: '';
+      height: 1.5em;
+      left: 0;
+      position: relative;
+      top: .5em;
+      transform: rotate(57.5deg);
+      transform-origin: 50% 100%;
+      width: .1em;
+    }
+
+    #title {
+      --paper-input-container-color: black;
+      --paper-input-container-input-color: black;
+
+      width: 90%;
+      margin: auto;
+    }
+
+    .container {
+      margin: auto;
+    }
+
+    .internal-container paper-button {
+      border: 1px solid black;
+      margin: 5px;
+      width: 150px;
+      height: 45px;
+    }
+
+  </style>
+  <template>
+    <div id="picture" class="polaroid">
+      <!-- <i id="pin" class$="pin {{color}}"></i> -->
+      <img file="{{file}}" src="{{image}}" on-drop="uploadImages" on-dragover="onAllowDrop"></img>
+
+      <div class="internal-container">
+        <paper-input id="title" value="{{text}}"></paper-input>
+      </div>
+
+      <div class="internal-container">
+        <paper-button on-click="optGrayscale">
+          Grayscale
+        </paper-button>
+         <paper-button on-click="brightness">
+          Brightness
+        </paper-button>
+         <paper-button on-click="threshold">
+          Threshold
+        </paper-button>
+         <paper-button on-click="convolute">
+          Convolute
+        </paper-button>
+        <paper-button on-click="negative">
+          Negative
+        </paper-button>
+        <paper-button on-click="contrast">
+          Sobel
+        </paper-button>
+      </div>
+
+      <paper-icon-button id="delete" icon="delete" on-click="delete"></paper-icon-button>
+      <!-- <hr/> -->
+    </div>
+    <canvas id="canvas" width="300px" height="240px" style="display:none"></canvas>
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-component-picture',
+
+      behaviors: [
+        LiquidBehavior,
+        Polymer.NeonAnimationRunnerBehavior
+      ],
+
+      properties: {
+        text: {
+          type: String,
+          notify: true,
+          value: "",
+          liquid: true
+        },
+
+        image: { 
+          type: String,
+          notify: true,
+          value: undefined,
+          observer: 'drawImage',
+          liquid: true
+        },
+
+        color: {
+          type: String,
+          notify: true,
+          value: ""
+        },
+
+        animationConfig: {
+          type: Object,
+          value: function() {
+            return {
+              'entry': [{
+                name: 'scale-up-animation',
+                node: this
+              }],
+              'exit': [{
+                name: 'fade-out-animation',
+                node: this
+              }]
+            }
+          }
+        },
+
+        opened: {
+          type: Boolean
+        },
+      },
+
+      listeners: {
+        'neon-animation-finish': '_onAnimationFinish'
+      },
+
+      attached: function() {
+        // console.log('we')
+        this.show()
+      },
+
+      delete: function() {
+        console.log(this.__liquidComponentUrl)
+        Liquid.closeComponent(this.__liquidComponentUrl)
+      },
+
+      _onAnimationFinish: function() {
+        if (!this.opened) {
+          this.style.display = 'inline-block';
+        }
+      },
+
+      show: function() {
+        this.opened = true;
+        this.style.display = 'inline-block';
+        this.playAnimation('entry');
+      },
+
+      hide: function() {
+        this.opened = false;
+        this.playAnimation('exit');
+      },
+
+      colors: ['red', 'blue', 'green', 'skyBlue', 'crimson', 'darkSeaGreen', 'lightGreen', 'tomato'],
+
+      ready: function() {
+        var randomColor = this.colors[Math.floor(Math.random() * this.colors.length)]
+        this.color = randomColor
+      },
+
+      onAllowDrop: function(e) {
+          e.preventDefault();
+      },
+
+      uploadImages: function(e) {
+        var self = this
+        e.preventDefault()
+        var files = e.dataTransfer.files
+
+        for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+          var reader = new FileReader();
+
+            
+          reader.onloadend = function(loadedEvent) {
+            self.image = loadedEvent.target.result;
+          };
+
+          reader.readAsDataURL(file);
+        }
+      },
+
+      applyGrayscale: function() {
+
+        this.image = effects(this.$.canvas, 'grayscale', {})
+      },
+
+      optGrayscale: function() {
+        this.image = effects(this.$.canvas, 'optGrayscale', {})
+      },
+
+      brightness: function() {
+        this.image = effects(this.$.canvas, 'brightness', {})
+      },
+
+      threshold: function() {
+        this.image = effects(this.$.canvas, 'threshold', {})
+      },
+
+      convolute: function() {
+        this.image = effects(this.$.canvas, 'convolute', {})
+      },
+
+      negative: function() {
+        this.image = effects(this.$.canvas, 'negative', {})
+      },
+
+      contrast: function() {
+        this.image = effects(this.$.canvas, 'sobel', {})
+      },
+
+      drawImage: function(image) {
+        var canvas = this.$.canvas
+        var ctx = canvas.getContext("2d")
+        var img = new Image;
+
+        img.onload = function(){
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+        img.src = image;
+      },
+    });
+  </script>
+</dom-module>

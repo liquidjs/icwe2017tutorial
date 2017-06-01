@@ -1,0 +1,186 @@
+<link rel="import" href="/polymer/polymer.html">
+<link rel="import" href="/paper-input/paper-input.html">
+<link rel="import" href="/paper-input/paper-textarea.html">
+<link rel="import" href="/paper-tabs/paper-tabs.html">
+<link rel="import" href="/paper-icon-button/paper-icon-button.html">
+<!-- <link rel="import" href="/paper-toggle-button/paper-toggle-button.html"> -->
+<link rel="import" href="/iron-a11y-keys/iron-a11y-keys.html">
+
+<dom-module id="liquid-component-chat">
+  <style></style>
+  <style is="custom-style">
+    :root {
+        width: 500px;
+        margin: 20px;
+        background-color: white;
+    }
+
+    .containerBox {
+        border: 1px solid black;
+    }
+
+    #input {
+      padding: 10px;
+    }
+
+    #history {
+      padding: 10px;
+      padding-top: 20px;
+      
+      --paper-input-container-color: black;
+      --paper-input-container-focus-color: black;
+      --paper-input-container-invalid-color: black;
+      --paper-input-container-input-color: black;
+
+      --paper-input-container-disabled: {
+        opacity: 1;
+      };
+    }
+
+    #delete {
+      color: white;
+    }
+
+    iron-a11y-keys {
+      display: none;
+    }
+
+    paper-toggle-button#toggleAutomaticChat {
+        --paper-toggle-button-unchecked-bar-color: white;
+        --paper-toggle-button-checked-bar-color: red;
+        --paper-toggle-button-unchecked-ink-color: white;
+        --paper-toggle-button-checked-ink-color: red;
+        --paper-toggle-button-unchecked-button-color: white;
+        --paper-toggle-button-checked-button-color: red;
+    }
+  </style>
+  <template>    
+    <div class="containerBox">
+      <paper-toolbar>
+        <paper-icon-button id="delete" icon="delete" on-click="delete"></paper-icon-button>
+        <div>
+          Chat window
+        </div>
+        <paper-tab></paper-tab>
+        <paper-button on-click="toggle">Simulate remote users</paper-button>
+        <!-- <paper-toggle-button id="toggleAutomaticChat" checked={{toggleCheck}}></paper-toggle-button> -->
+      </paper-toolbar>
+      <iron-a11y-keys id="a11y" target="[[_target]]" keys="enter" on-keys-pressed="keypress"></iron-a11y-keys>
+    
+      <paper-input id="input" label="Write your message" value="{{text}}"></paper-input>
+      
+      <paper-textarea id="history" label="Chat history" disabled value={{history}} rows="5"></paper-textarea>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-component-chat',
+
+      behaviors: [LiquidBehavior],
+
+      properties: {
+        text: {
+          notify: true,
+          value: '',
+          // liquid: true
+        },
+
+        nicknames: {
+          type: Array,
+          value: function() {return ['Masiar', 'Andrea', 'Ana', 'Vincenzo', 'Vassilis', 'Cesare']}
+        },
+
+        messages: {
+          type: Array,
+          value: function() {return [
+            'Hello',
+            'Be Right Back',
+            'How are you today?',
+            'AFK',
+            'What are you doing?',
+            'So boring',
+            'So happy',
+            'Anyone there?',
+            'I need to talk to you!',
+            'Is it raining outside?',
+            'I am hungry',
+            'This hamburger is so tasty',
+            'Wanna come to my house?',
+            'This movie was so fun',
+            'Who are you?',
+            'Yes',
+            'No',
+            'Nope'
+          ]},
+        },
+
+        history: {
+          type: String,
+          value: '',
+          liquid: true
+        },
+
+        _target: {
+          type: Object,
+          value: function() {
+            return this.$.input;
+          }
+        },
+
+        toggleCheck: {
+          type: Boolean,
+          value: false,
+          observer: 'observerToggle'
+        }
+      },
+
+      attached: function(){
+        // this.interval = setInterval(this.newRandomMessage.bind(this), 10000)
+        // this.newRandomMessage()
+      },
+
+      delete: function() {
+        console.log(this.__liquidComponentUrl)
+        Liquid.closeComponent(this.__liquidComponentUrl)
+      },
+
+      toggle: function() {
+        this.newRandomMessage()
+        // this.$.toggleAutomaticChat.checked = !this.$.toggleAutomaticChat.checked
+      },
+
+      observerToggle: function(newValue) {
+        if(newValue == false) {
+          if(this.interval) {
+            clearInterval(this.interval)
+          }
+          this.interval = undefined
+        } else {
+          this.interval = setInterval(this.newRandomMessage.bind(this), 10000)
+          this.newRandomMessage()
+        }
+      },
+
+      newRandomMessage: function() {
+        var nickname = this.nicknames[Math.floor(Math.random() * this.nicknames.length)]
+        var message = this.messages[Math.floor(Math.random() * this.messages.length)]
+
+        this.addMessage(nickname, message)
+      },
+
+      addMessage: function(nickname, message) {
+        var line = `<${nickname}> :  ${message}\n`
+        this.history = line + this.history
+      },
+
+      keypress: function (e) {
+        var nickname = ''
+        if(window.getNickname) {
+          nickname = window.getNickname()
+        }
+        this.addMessage(nickname, this.text)
+        this.text = ""
+      }
+    });
+  </script>
+</dom-module>

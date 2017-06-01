@@ -1,0 +1,35 @@
+{
+  "name": "liquid.js",
+  "version": "0.0.1",
+  "description": "Framework for liquid Web applications",
+  "main": "index.js",
+  "dependencies": {
+    "adaro": "^1.0.4",
+    "cors": "^2.7.1",
+    "debug": "^2.2.0",
+    "ejs": "^2.3.4",
+    "express": "^4.13.3",
+    "express-session": "^1.14.2",
+    "jade": "^1.11.0",
+    "mongodb": "^2.0.49",
+    "mongoose": "^4.2.7",
+    "peer": "^0.2.8",
+    "socket.io": "^1.7.2",
+    "socket.io-client": "^1.7.2",
+    "socket.io-p2p": "^2.1.1",
+    "socket.io-p2p-server": "^1.2.0",
+    "xhr-request": "^1.0.1",
+    "yjs": "^11.0.4"
+  },
+  "scripts": {
+    "install": "bower install",
+    "start": "DEBUG='ljs,ljs:signalingServer,ljs:deploymentServer,ljs:websocketServer' node --inspect index.js -e html,dust,css,js -c config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "liquid"
+  ],
+  "author": "Andrea Gallidabino",
+  "license": "ISC"
+}

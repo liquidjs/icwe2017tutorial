@@ -1,0 +1,69 @@
+doctype html
+html
+	head
+		script(src="/fetch/fetch.js")
+		script(src="/webcomponentsjs/webcomponents-lite.min.js")
+		<link rel="import" href="/polymer/polymer.html">
+		<link href="/intro.js/introjs.css" rel="stylesheet">
+
+		<link rel="stylesheet" href="/codemirror/lib/codemirror.css">
+		<script src="/codemirror/lib/codemirror.js"></script>
+		<script src="/codemirror/mode/xml/xml.js"></script>
+		<script src="/codemirror/mode/javascript/javascript.js"></script>
+		<script src="/codemirror/mode/css/css.js"></script>
+		<script src="/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+
+		script.
+			var liquidConfig = !{JSON.stringify(client)}
+
+		script(src="/components/webrtc/peer.js")
+
+
+		title.
+			Liquid.js
+
+		meta(name="viewport", content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+
+		style.
+			html,body {
+				height: 100%;
+				margin: 0;
+				font-family: 'RobotoDraft', sans-serif;
+				position: relative;
+				-webkit-user-select: none;
+				background-color: #D4D4D4;
+			}
+
+			.CodeMirror {
+				border: 1px solid #eee;
+				height: auto;
+			}
+
+	body(unresolved onload="load()")
+		div.toolbar
+
+		div.generator
+
+		script(src="/intro.js/intro.js")
+		script(src="/corescripts/liquidAPI.js")
+
+		script(src="/scripts/editor.js")
+
+		<!-- Piwik -->
+		script(type="text/javascript").
+			var _paq = _paq || [];
+			// tracker methods like "setCustomDimension" should be called before "trackPageView"
+			_paq.push(["setDomains", ["*.liquid.inf.usi.ch","*.liquid.inf.unisi.ch","*.liquid.inf.usi.ch"]]);
+			_paq.push(['trackPageView']);
+			_paq.push(['enableLinkTracking']);
+			(function() {
+			var u="//design.inf.unisi.ch/piwik/";
+			_paq.push(['setTrackerUrl', u+'piwik.php']);
+			_paq.push(['setSiteId', '8']);
+			var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+			g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+			})();
+
+		noscript.
+			<p><img src="//design.inf.unisi.ch/piwik/piwik.php?idsite=8&rec=1" style="border:0;" alt="" /></p></noscript>
+		<!-- End Piwik Code -->
