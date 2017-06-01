@@ -386,8 +386,8 @@ const strategies = {
 			console.error(`TODO: received strategy message: ${message}`)
 		},
 
-		disconnect: function(){
-			
+		disconnect: function(peerId){
+
 		}
 	}
 }

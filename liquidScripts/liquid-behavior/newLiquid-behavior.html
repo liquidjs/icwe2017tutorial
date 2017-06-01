@@ -23,26 +23,26 @@
           notify: true
         },
 
-        __liquidVariablesList: {
+        __liquidPropertiesList: {
           type: Object,
           value: function(){return {};}
         },
 
-        __liquidRegisteredPrimitivesVariables: {
+        __liquidRegisteredPrimitivesProperties: {
           type: Array,
           value: function() { return []; },
           notify: true,
           observer: '_changedLiquidPrimitives'
         },
 
-        __liquidRegisteredArrayVariables: {
+        __liquidRegisteredArrayProperties: {
           type: Array,
           value: function() { return []; },
           notify: true,
           observer: '_changedLiquidArrays'
         },
 
-        __liquidRegisteredObjectVariables: {
+        __liquidRegisteredObjectProperties: {
           type: Array,
           value: function() { return []; },
           notify: true,
@@ -61,7 +61,7 @@
           notify: true
         },
 
-        __variablePairs: {
+        __propertyPairs: {
           type: Object,
           value: function() {return {};},
           notify: true
@@ -122,16 +122,16 @@
       },
 
       detached: function() {
-        const variables = this.getLiquidVariablesList()
-        for(const variable in variables) {
+        const properties = this.getLiquidPropertiesList()
+        for(const property in properties) {
           let liquidURL = {
             device: this.__liquidComponentUrl.device,
             componentRef: this.__liquidComponentUrl.componentRef,
             type: this.__liquidComponentUrl.type,
-            variable: variable
+            property: property
           }
-          this.__emitterYs[variable].emitEvent('unregister', [liquidURL])
-          // this.__emitterYs[variable].emitEvent('bind-disconnect', [liquidURL])
+          this.__emitterYs[property].emitEvent('unregister', [liquidURL])
+          // this.__emitterYs[property].emitEvent('bind-disconnect', [liquidURL])
         }
       },
 
@@ -153,20 +153,20 @@
             liquidui: this.liquidui,
             liquidname: this.liquidname
           },
-          variables: this.getLiquidVariablesValue()
+          properties: this.getLiquidPropertiesValue()
         }
 
-        // for(var i in this.__liquidVariablesList) {
-        //   snapshot.variables[i] = this._getVariableSnapshot(i)
+        // for(var i in this.__liquidPropertiesList) {
+        //   snapshot.properties[i] = this._getPropertySnapshot(i)
         // }
 
         return snapshot
       },
 
-      // _getVariableSnapshot: function(variableName) {
+      // _getPropertySnapshot: function(propertyName) {
       //   return {
-      //     name: variableName,
-      //     value: this.__data__[variableName]
+      //     name: propertyName,
+      //     value: this.__data__[propertyName]
       //   }
       // },
 
@@ -214,7 +214,7 @@
         return isContained
       },
 
-      _scanRegisterVariable: function() {
+      _scanRegisterProperty: function() {
         var self = this
         var max = 0
         for(var i in this.properties) {
@@ -231,7 +231,7 @@
             // window.performanceCounter++
             // window.performance.mark('start' + window.performanceCounter)
 
-            if(self.__liquidRegisteredPrimitivesVariables.indexOf(propKey) != -1) {
+            if(self.__liquidRegisteredPrimitivesProperties.indexOf(propKey) != -1) {
               var oldValue = target[propKey]
 
               if(oldValue != value) {
@@ -254,9 +254,9 @@
 
         var counter = 0
         for(var name in this.properties) {
-          var variable = this.properties[name]
-          if(variable.liquid) {
-            this.liquidRegisterVariable(name, variable.liquid, variable.type, function(variableType) {
+          var property = this.properties[name]
+          if(property.liquid) {
+            this.liquidRegisterProperty(name, property.liquid, property.type, function(propertyType) {
               counter++
               if(counter == max) {
                 self.__data__ = new Proxy(self.__data__, proxyPrimitiveHandler)
@@ -291,7 +291,7 @@
       // _checkIntialisation: function() {
       //   if(this.__isInitialised.roomToken && !this.__isInitialised.yjs && !this.__isInitialised.all) {
       //     Liquid.registerComponent(this, this.tagName.replace('LIQUID-COMPONENT-', '').toLocaleLowerCase(), {});
-      //     this._scanRegisterVariable();
+      //     this._scanRegisterProperty();
       //   }
 
       //   if(this.__isInitialised.yjs && this.__isInitialised.roomToken && !this.__isInitialised.all) {
@@ -300,35 +300,35 @@
       //   }
       // },
 
-      liquidRegisterVariable: function(name, params, type, callback) {
-        var variableType = undefined
+      liquidRegisterProperty: function(name, params, type, callback) {
+        var propertyType = undefined
 
         if(type === String) {
-          variableType = 'string'
+          propertyType = 'string'
         } else if(type === Number) {
-          variableType = 'number'
+          propertyType = 'number'
         } else if(type === Boolean) {
-          variableType = 'boolean'
+          propertyType = 'boolean'
         } else if(type === Array) {
-          variableType = 'array'
+          propertyType = 'array'
         } else if(type === Object) {
-          variableType = 'object'
+          propertyType = 'object'
         } else {
-          variableType = typeof this[name]
+          propertyType = typeof this[name]
         }
-        variableType = variableType.toLowerCase();
+        propertyType = propertyType.toLowerCase();
 
-        this.__variablePairs[name] = {
+        this.__propertyPairs[name] = {
           incoming: [],
           outgoing: []
         }
-        this.__liquidVariablesList[name] = params;
+        this.__liquidPropertiesList[name] = params;
 
         // Javascript Types: String, Number, Boolean, Array, Object
-        if(variableType == 'object') {
-          // this.__liquidRegisteredObjectVariables.push(name)
-          this.push('__liquidRegisteredObjectVariables', name)
-          this._createYVariable(name, variableType, (y) => {
+        if(propertyType == 'object') {
+          // this.__liquidRegisteredObjectProperties.push(name)
+          this.push('__liquidRegisteredObjectProperties', name)
+          this._createYProperty(name, propertyType, (y) => {
             var yMap = this.__componentYs[name].share.state
 
             // Recursive
@@ -339,12 +339,12 @@
             this._setObserverOnObject(this[name], name, yMap, 'object')
 
             if(callback)
-              callback(variableType)
+              callback(propertyType)
           })
-        } else if(Array.isArray(this[name]) || variableType == 'array') {
-          // this.__liquidRegisteredArrayVariables.push(name)
-          this.push('__liquidRegisteredArrayVariables', name)
-          this._createYVariable(name, variableType, (y) => {
+        } else if(Array.isArray(this[name]) || propertyType == 'array') {
+          // this.__liquidRegisteredArrayProperties.push(name)
+          this.push('__liquidRegisteredArrayProperties', name)
+          this._createYProperty(name, propertyType, (y) => {
             var yMap = this.__componentYs[name].share.state
 
             // for(var i = 0; i < self[name].length; i++) {
@@ -362,17 +362,17 @@
             this._setObserverOnObject(this[name], name, yMap, 'array')
 
             if(callback)
-              callback(variableType)
+              callback(propertyType)
           })
-        } else if(variableType == 'string' || variableType == 'number' || variableType == 'boolean') {
-          // this.__liquidRegisteredPrimitivesVariables.push(name)
-          this.push('__liquidRegisteredPrimitivesVariables', name)
-          this._createYVariable(name, variableType, (y) => {
+        } else if(propertyType == 'string' || propertyType == 'number' || propertyType == 'boolean') {
+          // this.__liquidRegisteredPrimitivesProperties.push(name)
+          this.push('__liquidRegisteredPrimitivesProperties', name)
+          this._createYProperty(name, propertyType, (y) => {
             this.__componentYs[name].share.state.set(name, this[name])
             this.__componentYs[name].share.state.observe(this._onYChangePrimitive.bind(this, name))
 
             if(callback)
-              callback(variableType)
+              callback(propertyType)
           })
         } else {
           console.log('invalid type')
@@ -464,86 +464,86 @@
         }
       },
 
-      // liquidVariableChange: function(name, newValue) {
+      // liquidPropertyChange: function(name, newValue) {
 
       // },
 
-      getLiquidVariablesList: function() {
-        return this.__liquidVariablesList
+      getLiquidPropertiesList: function() {
+        return this.__liquidPropertiesList
       },
 
-      getLiquidVariablesValue: function() {
+      getLiquidPropertiesValue: function() {
         var a = {}
 
-        for (var i in this.__liquidVariablesList) {
+        for (var i in this.__liquidPropertiesList) {
           a[i] = this.__data__[i]
         }
 
         return a
       },
 
-      getLiquidVariable: function(variableURL) {
-        return this.__data__[variableURL.variable]
+      getLiquidProperty: function(propertyURL) {
+        return this.__data__[propertyURL.property]
       },
 
       getLiquidPairings: function() {
-        return this.__variablePairs
+        return this.__propertyPairs
       },
 
-      pairVariableOutgoing: function(fromURL, toURL) {
+      pairPropertyOutgoing: function(fromURL, toURL) {
         if(!this.__isInitialised.all) {
           this.__stackedOperations.push({
-            operation: 'pairVariableOutgoing',
+            operation: 'pairPropertyOutgoing',
             parameters: [Object.assign({}, fromURL), Object.assign({}, toURL)]
           })
 
           return
         }
 
-        var variable = fromURL.variable
+        var property = fromURL.property
 
-        this.__variablePairs[variable].outgoing.push(toURL)
-        this.__emitterYs[variable].emitEvent('bind-connect', [toURL])
+        this.__propertyPairs[property].outgoing.push(toURL)
+        this.__emitterYs[property].emitEvent('bind-connect', [toURL])
       },
 
-      pairVariableIncoming: function(fromURL, toURL) {
+      pairPropertyIncoming: function(fromURL, toURL) {
         if(!this.__isInitialised.all) {
           this.__stackedOperations.push({
-            operation: 'pairVariableIncoming',
+            operation: 'pairPropertyIncoming',
             parameters: [Object.assign({}, fromURL), Object.assign({}, toURL)]
           })
 
           return
         }
-        var variable = toURL.variable
+        var property = toURL.property
 
-        this.__variablePairs[variable].incoming.push(fromURL)
-        this.__emitterYs[variable].emitEvent('bind-connect', [fromURL])
+        this.__propertyPairs[property].incoming.push(fromURL)
+        this.__emitterYs[property].emitEvent('bind-connect', [fromURL])
       },
 
       /**
-       * Unpair the variable corresponding to the given from-/to-URL
+       * Unpair the property corresponding to the given from-/to-URL
        */
-      unpairVariable: function(variableURL) {
+      unpairProperty: function(propertyURL) {
         if(!this.__isInitialised.all) {
           this.__stackedOperations.push({
-            operation: 'unpairVariable',
-            parameters: [Object.assign({}, variableURL)]
+            operation: 'unpairProperty',
+            parameters: [Object.assign({}, propertyURL)]
           })
 
           return
         }
         
-        /* look up the variable in and out and removed it. */
-        let variable = variableURL.variable
-        let vars = this.__variablePairs[variable]
+        /* look up the property in and out and removed it. */
+        let property = propertyURL.property
+        let vars = this.__propertyPairs[property]
         // let incoming = vars.incoming
         // let outgoing = vars.outgoing
         let index = vars.incoming.findIndex((liquidURL) => {
-          if(liquidURL.device == variableURL.device &&
-          liquidURL.componentRef == variableURL.componentRef &&
-          liquidURL.type == variableURL.type &&
-          liquidURL.variable == variableURL.variable){
+          if(liquidURL.device == propertyURL.device &&
+          liquidURL.componentRef == propertyURL.componentRef &&
+          liquidURL.type == propertyURL.type &&
+          liquidURL.property == propertyURL.property){
             return true
           } else {
             return false
@@ -554,10 +554,10 @@
         }
 
         index = vars.outgoing.findIndex((liquidURL) => {
-          if(liquidURL.device == variableURL.device &&
-          liquidURL.componentRef == variableURL.componentRef &&
-          liquidURL.type == variableURL.type &&
-          liquidURL.variable == variableURL.variable){
+          if(liquidURL.device == propertyURL.device &&
+          liquidURL.componentRef == propertyURL.componentRef &&
+          liquidURL.type == propertyURL.type &&
+          liquidURL.property == propertyURL.property){
             return true
           } else {
             return false
@@ -569,15 +569,15 @@
       },
 
       // receiveYMessage: function(message) {
-      //   var variable = message.to.variable
-      //   console.log('LB:rcvYMsg: '+variable)
-      //   if (this.__emitterYs[variable]) {
+      //   var property = message.to.property
+      //   console.log('LB:rcvYMsg: '+property)
+      //   if (this.__emitterYs[property]) {
       //     console.log('emitEvent: y-message')
-      //     this.__emitterYs[variable].emitEvent('y-message', [message.from, message])
+      //     this.__emitterYs[property].emitEvent('y-message', [message.from, message])
       //   }else{
       //     console.log('ERROR: emitter undefined!!!')
       //   }
-      //   // this.__emitterYs[variable].emitEvent('y-message', [message.from, message])
+      //   // this.__emitterYs[property].emitEvent('y-message', [message.from, message])
       // },
       receiveYMessage: function(message) {
         if(!this.__isInitialised.all) {
@@ -589,14 +589,14 @@
           return
         }
 
-        var variable = message.to.variable
-        this.__emitterYs[variable].emitEvent('y-message', [message.from, message])
+        var property = message.to.property
+        this.__emitterYs[property].emitEvent('y-message', [message.from, message])
       },
 
       //Polymer Observer implementation
       // _liquidLocalChangePrimitive: function(added, removed, changed, getOldValueFn) {
       //   for(var i in changed) {
-      //     if(this.__liquidRegisteredPrimitivesVariables.indexOf(i) != -1) {
+      //     if(this.__liquidRegisteredPrimitivesProperties.indexOf(i) != -1) {
       //       this.__componentYs[i].share.state.set(i, changed[i])
       //     }
       //   }
@@ -605,9 +605,9 @@
         // window.performanceCounter++
         // window.performance.mark('start' + window.performanceCounter)
         for(var i in changes) {
-          var variableName = changes[i].name
-          if(this.__liquidRegisteredPrimitivesVariables.indexOf(variableName) != -1) {
-            this.__componentYs[variableName].share.state.set(variableName, this[variableName])
+          var propertyName = changes[i].name
+          if(this.__liquidRegisteredPrimitivesProperties.indexOf(propertyName) != -1) {
+            this.__componentYs[propertyName].share.state.set(propertyName, this[propertyName])
           }
         }
         // window.performance.mark('end' + window.performanceCounter)
@@ -679,11 +679,11 @@
         }
       },              
 
-      _onYChangePrimitive: function(variableName, change) {
+      _onYChangePrimitive: function(propertyName, change) {
         var value = change.value
 
-        if(this.variableName != value) {
-          this.set(variableName, value)
+        if(this.propertyName != value) {
+          this.set(propertyName, value)
         }
       },
 
@@ -714,16 +714,16 @@
         // var index = change.name
 
         // if(t == 'update') {
-        //   if(value != this[variableName][index]) {
-        //     this.set(variableName + "." + index, value)
+        //   if(value != this[propertyName][index]) {
+        //     this.set(propertyName + "." + index, value)
         //   }
         // } else if (t == 'add') {
-        //   if(value != this[variableName][index]) {
-        //     this.push(variableName, value)
+        //   if(value != this[propertyName][index]) {
+        //     this.push(propertyName, value)
         //   }
         // } else if (t == 'delete') {
-        //   if(this.__componentYs[variableName].share.state.keys().length != this[variableName].length) {
-        //     this.splice(variableName, index, 1)
+        //   if(this.__componentYs[propertyName].share.state.keys().length != this[propertyName].length) {
+        //     this.splice(propertyName, index, 1)
         //   }
         // }
       },
@@ -797,15 +797,15 @@
         }
       },
 
-      _createYVariable: function(variableName, variableType, callback) {
+      _createYProperty: function(propertyName, propertyType, callback) {
         var self = this
         var yType = undefined
-        if(variableType == 'object'){
+        if(propertyType == 'object'){
             yType = 'Map'
-        } else if(variableType == 'array') {
+        } else if(propertyType == 'array') {
             yType = 'Array'
             // yType = 'Array'
-        } else if(variableType == 'string' || variableType == 'number' || variableType == 'boolean') {
+        } else if(propertyType == 'string' || propertyType == 'number' || propertyType == 'boolean') {
             yType = 'Map'
         } else {
           console.log('yType not valid')
@@ -823,7 +823,7 @@
             component: this,
             room: 'liquidroom'+this.roomToken,
             // room: 'liquidroom',
-            variable: variableName,
+            property: propertyName,
             eventEmitter: emitterY
           },
 
@@ -837,10 +837,10 @@
         }).then(function (y) {
           //TODO here. Subscribe the emitter .subscribe(__liquidComponentUrl, emitter)
           // subscribe(self.__liquidComponentUrl, emitterY, y.connector.room)
-          LiquidPeerConnection.subscribe(variableName, self.__liquidComponentUrl, emitterY)
+          LiquidPeerConnection.subscribe(propertyName, self.__liquidComponentUrl, emitterY)
 
-          self.__componentYs[variableName] = y
-          self.__emitterYs[variableName] = emitterY
+          self.__componentYs[propertyName] = y
+          self.__emitterYs[propertyName] = emitterY
 
           if(callback)
             callback(y)
@@ -856,7 +856,7 @@
         // this.__stackedOperations = []
       },
 
-      _updateLiquidVariablesLists: function() {
+      _updateLiquidPropertiesLists: function() {
         if(!this.__liquiduiComponent) {
           for(var i = 0; i < this.childNodes.length; i++) {
             if(this.childNodes[i].nodeName.startsWith('LIQUID-UI')) {
@@ -875,19 +875,19 @@
 
       _changedLiquidPrimitives: function() {
         if(this.__liquiduiComponent) {
-          this.__liquiduiComponent.updateLiquidPrimitives(this.__liquidRegisteredPrimitivesVariables)
+          this.__liquiduiComponent.updateLiquidPrimitives(this.__liquidRegisteredPrimitivesProperties)
         }
       },
 
       _changedLiquidArrays: function() {
         if(this.__liquiduiComponent) {
-          this.__liquiduiComponent.updateLiquidArrays(this.__liquidRegisteredArrayVariables)
+          this.__liquiduiComponent.updateLiquidArrays(this.__liquidRegisteredArrayProperties)
         }
       },
 
       _changedLiquidObjects: function() {
         if(this.__liquiduiComponent) {
-          this.__liquiduiComponent.updateLiquidObjects(this.__liquidRegisteredObjectVariables)
+          this.__liquiduiComponent.updateLiquidObjects(this.__liquidRegisteredObjectProperties)
         }
       },
 
@@ -951,7 +951,7 @@
       _checkIntialisation: function() {
         if(this.__isInitialised.roomToken && !this.__isInitialised.yjs && !this.__isInitialised.all) {
           Liquid.registerComponent(this, this.tagName.replace('LIQUID-COMPONENT-', '').toLocaleLowerCase(), {});
-          this._scanRegisterVariable();
+          this._scanRegisterProperty();
         }
 
         if(this.__isInitialised.yjs && this.__isInitialised.roomToken && !this.__isInitialised.all) {

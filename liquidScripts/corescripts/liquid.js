@@ -1,5 +1,5 @@
 var liquid = {
-	variable: function(v, value) {
+	property: function(v, value) {
 		var o = {}	
 		o[v] = value
 		socket.emit('state', o)
@@ -187,14 +187,14 @@ var liquid = {
 		application.windows[pageName].push(id)
 		application.windowReferences[id] = frame
 
-		for(var i = 0; i < application.variable_subscriptions[pageName].length; i++) {
-			application.subscriptions[application.variable_subscriptions[pageName][i]][id] = frame
+		for(var i = 0; i < application.property_subscriptions[pageName].length; i++) {
+			application.subscriptions[application.property_subscriptions[pageName][i]][id] = frame
 		}
 
-		for(var i = 0; i < application.variable_subscriptions[pageName].length; i++) {
-			var v = application.variable_subscriptions[pageName][i]
+		for(var i = 0; i < application.property_subscriptions[pageName].length; i++) {
+			var v = application.property_subscriptions[pageName][i]
 			var value = application.state[v]
-			frame.postVariable(v,value)
+			frame.postProperty(v,value)
 		}
 
 		if(locals == undefined) {
@@ -202,14 +202,14 @@ var liquid = {
 				// for(var i = 0; i < application.locals[pageName].length; i++) {
 				// 	var varName = application.locals[pageName][i]
 				// 	var varInit = application.initialisations[varName]
-				// 	frame.registerLocalVariable(varName, varInit, application.permissions[varName])
+				// 	frame.registerLocalProperty(varName, varInit, application.permissions[varName])
 				// }
 			}
 		} else {
 			if(locals.storage != undefined) {
 				var storage = locals.storage
 				for(var n in storage) {
-					frame.registerSharedVariable(n, storage[n], application.permissions[n])
+					frame.registerSharedProperty(n, storage[n], application.permissions[n])
 				}
 			}
 

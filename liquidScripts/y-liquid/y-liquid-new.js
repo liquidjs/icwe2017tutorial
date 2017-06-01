@@ -55,7 +55,7 @@ function extendLiquidConnector (Y) {
       }
 
       this.addTable = function(url) {
-        let str = ''+url.device+'.'+url.componentRef+'.'+url.variable
+        let str = ''+url.device+'.'+url.componentRef+'.'+url.property
         // let id = this.createId()
         let id = hashFnv32a(str, true)
 
@@ -74,7 +74,7 @@ function extendLiquidConnector (Y) {
        * Removes enrty from table
        */
       this.removeTable = function(url) {
-        let str = ''+url.device+'.'+url.componentRef+'.'+url.variable
+        let str = ''+url.device+'.'+url.componentRef+'.'+url.property
         let id = hashFnv32a(str, true)
         delete this.idToUrlTable[id]
         delete this.urlToIdTable[url]
@@ -96,26 +96,26 @@ function extendLiquidConnector (Y) {
       //   return {
       //     device: a[0],
       //     componentRef: a[1],
-      //     variable: a[2]
+      //     property: a[2]
       //   }
       // }
 
       // this.urlToId = function(url) {
-      //   return url.device + '/' + url.componentRef + '/' + url.variable
+      //   return url.device + '/' + url.componentRef + '/' + url.property
       // }
 
       var componentReference = {
         device: options.component.__liquidComponentUrl.device,
         componentRef: options.component.__liquidComponentUrl.componentRef,
         type: options.component.__liquidComponentUrl.type,
-        variable: options.variable
+        property: options.property
       }
 
       var emitter = options.eventEmitter
 
       this.component = options.component
       this.reference = componentReference
-      this.variable = componentReference.variable
+      this.property = componentReference.property
 
       var personalId = this.addTable(this.reference)
       this.setUserId(personalId)
@@ -123,18 +123,18 @@ function extendLiquidConnector (Y) {
       var self = this
 
 
-      emitter.addListener('bind-connect', function(variableURL){
-        var id = self.addTable(variableURL)
-        if(debug)console.warn(`userjoined: ${id}  bind-connect  device:${variableURL.device}.${variableURL.componentRef}.${variableURL.variable}`)
+      emitter.addListener('bind-connect', function(propertyURL){
+        var id = self.addTable(propertyURL)
+        if(debug)console.warn(`userjoined: ${id}  bind-connect  device:${propertyURL.device}.${propertyURL.componentRef}.${propertyURL.property}`)
         self.userJoined(id, 'master')
       })
 
-      emitter.addListener('bind-disconnect', function(variableURL){
-        const id = self.getId(variableURL)
-        if(debug)console.warn(`userleft: ${id}  bind-disconnect  device:${variableURL.device}.${variableURL.componentRef}.${variableURL.variable}`)
+      emitter.addListener('bind-disconnect', function(propertyURL){
+        const id = self.getId(propertyURL)
+        if(debug)console.warn(`userleft: ${id}  bind-disconnect  device:${propertyURL.device}.${propertyURL.componentRef}.${propertyURL.property}`)
         self.userLeft(id)
-        self.component.unpairVariable(variableURL)
-        self.removeTable(variableURL)
+        self.component.unpairProperty(propertyURL)
+        self.removeTable(propertyURL)
 
         // Should we remove the listener here or in destroy????
         // emitter.removeListener('bind-disconnect', console.warn('Removed Listener <bind-disconnect>'))
@@ -142,17 +142,17 @@ function extendLiquidConnector (Y) {
         // emitter.removeListener('y-message', console.warn('Removed Listener <y-message>'))
       })
 
-      emitter.addListener('unregister', (variableURL) => {
+      emitter.addListener('unregister', (propertyURL) => {
         /* Send unregister message to peers */
         const disconnect_msg = {
           operation: 'unregister',
-          url: variableURL
+          url: propertyURL
         } 
         self.broadcast(disconnect_msg)
-        /* Local Cleanup of this variable */
-        // LiquidPeerConnection.unregisterPairedVariable(variableURL, variableURL)
-        LiquidPeerConnection.unregisterLocalPairedVariable(variableURL)
-        // self.component.unpairVariable(variableURL)
+        /* Local Cleanup of this property */
+        // LiquidPeerConnection.unregisterPairedProperty(propertyURL, propertyURL)
+        LiquidPeerConnection.unregisterLocalPairedProperty(propertyURL)
+        // self.component.unpairProperty(propertyURL)
 
         // Should we remove the listener here????
         // emitter.removeListerner('unregister', console.warn('Removed listerner <unregister>'))
@@ -203,7 +203,7 @@ function extendLiquidConnector (Y) {
     }
     
     broadcast (yMessage) {
-      const urls = this.component.__variablePairs[this.variable]
+      const urls = this.component.__propertyPairs[this.property]
       
       if(LiquidPeerConnection.shouldPackageBroadcastMessages()) {
         let destinations = urls.outgoing.concat(urls.incoming)

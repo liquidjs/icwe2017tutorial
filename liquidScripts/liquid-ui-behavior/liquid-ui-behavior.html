@@ -54,7 +54,7 @@
         this.computeLiquidDepth(this.liquidComponentUrl)
         Liquid.addEventListener('pairedDevicesListUpdate', this.updateDeviceList.bind(this))
 
-        this.parentNode._updateLiquidVariablesLists()
+        this.parentNode._updateLiquidPropertiesLists()
       },
 
       detached: function() {
@@ -82,14 +82,14 @@
         
         e.dataTransfer.setData("liquidURL", JSON.stringify(url));
         e.dataTransfer.setData("liquidui", this.liquiduiType);
-        e.dataTransfer.setData("liquidStorage", JSON.stringify(parent.getLiquidVariablesValue()));
+        e.dataTransfer.setData("liquidStorage", JSON.stringify(parent.getLiquidPropertiesValue()));
         e.dataTransfer.setData("isContainer", parent._isContainerComponent())
         e.dataTransfer.setData("liquidChildComponents", JSON.stringify(parent._getLiquidChildComponents()))
         // e.dataTransfer.setData("liquidPairings", JSON.stringify(this.parentNode.getLiquidPairings()))
       },
 
       onTouch: function(e) {
-        Liquid.setLastTouch(this.liquidComponentUrl, true, this.parentNode.getLiquidVariablesValue())
+        Liquid.setLastTouch(this.liquidComponentUrl, true, this.parentNode.getLiquidPropertiesValue())
       },
 
       onClose: function(e) {
@@ -115,7 +115,7 @@
         var operation = data.operation
         var fromURL = this.liquidComponentUrl
         var fromUI = this.liquiduiType
-        var fromState = this.parentNode.getLiquidVariablesValue()
+        var fromState = this.parentNode.getLiquidPropertiesValue()
         var isContainer = this.parentNode._isContainerComponent()
         var childComponents = this.parentNode._getLiquidChildComponents()
 
@@ -246,8 +246,8 @@
         }
       },
 
-      variableToURL: function(item) {
-        return JSON.stringify(Object.assign({variable: item}, this.liquidComponentUrl))
+      propertyToURL: function(item) {
+        return JSON.stringify(Object.assign({property: item}, this.liquidComponentUrl))
       },
 
       updateName: function(name) {

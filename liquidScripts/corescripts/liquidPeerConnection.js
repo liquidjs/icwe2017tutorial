@@ -8,7 +8,7 @@ const LiquidPeerConnection = (function() {
 	let __liquidURLToEmitter = new Map()	// Stores emitter associated with liquidURL
 											// the key format is "deviceId/compRef"
 	let liquidStrategy = undefined
-	let __variableToURLs = {}				// Stores the urls paired with a variable
+	let __propertyToURLs = {}				// Stores the urls paired with a property
 	
 	let __useRoutingTable					// use the routing table database
 	/**
@@ -371,19 +371,19 @@ const LiquidPeerConnection = (function() {
 	}
 
 	const _emitBindDisconnectEvent = function(lost_peer) {
-		for(let item in __variableToURLs) {
-			let liquidURLs = __variableToURLs[item]
+		for(let item in __propertyToURLs) {
+			let liquidURLs = __propertyToURLs[item]
 			if (debug) console.log(`BEFORE removeVar item: ${item} asd:${JSON.stringify(liquidURLs)}`)
 			for(let liquidURL of liquidURLs) {
 				if (liquidURL.device == lost_peer) {
 					const key = `${Liquid.getDeviceId()}/${item}`
 					const emitter = __liquidURLToEmitter.get(key)
 					if (debug) console.log(`FOUND EMITTER FOR LOST VARIABLE! unregister ${JSON.stringify(liquidURL)}`)
-					_removeVariableFromVarToURLs(liquidURL, liquidURL)
+					_removePropertyFromVarToURLs(liquidURL, liquidURL)
 					emitter.emitEvent('bind-disconnect', [liquidURL])
 				}
 			}
-			if (debug) console.log(`AFTER removeVar item: ${item} asd:${JSON.stringify(__variableToURLs[item])}`)
+			if (debug) console.log(`AFTER removeVar item: ${item} asd:${JSON.stringify(__propertyToURLs[item])}`)
 		}
 	}
 
@@ -488,9 +488,9 @@ const LiquidPeerConnection = (function() {
 	 * @param  {[type]} emitter   [description]
 	 * @return {[type]}           [description]
 	 */
-	const _subscribe = function(variableName, liquidURL, emitter) {
-		if(debug) console.log(`LPC -> _subscribe() ${liquidURL.device}/${liquidURL.componentRef}/${variableName}`)
-		__liquidURLToEmitter.set(`${liquidURL.device}/${liquidURL.componentRef}/${variableName}`, emitter)
+	const _subscribe = function(propertyName, liquidURL, emitter) {
+		if(debug) console.log(`LPC -> _subscribe() ${liquidURL.device}/${liquidURL.componentRef}/${propertyName}`)
+		__liquidURLToEmitter.set(`${liquidURL.device}/${liquidURL.componentRef}/${propertyName}`, emitter)
 	}
 
 	const _setShouldSaveTimingStats = function(bool) {
@@ -684,10 +684,10 @@ const LiquidPeerConnection = (function() {
 			if(op == 'unregister') {
 				const fromURL = message.from
 				const toURL = message.to
-				_unregisterPairedVariable(fromURL, toURL)
+				_unregisterPairedProperty(fromURL, toURL)
 			} 
 		} else {
-			const emitter = __liquidURLToEmitter.get(`${message.to.device}/${message.to.componentRef}/${message.to.variable}`)
+			const emitter = __liquidURLToEmitter.get(`${message.to.device}/${message.to.componentRef}/${message.to.property}`)
 			if (emitter) {
 				emitter.emitEvent('y-message', [message.from, message])
 			} else {
@@ -702,12 +702,12 @@ const LiquidPeerConnection = (function() {
 		}
 	}
 
-	const _registerPairedVariable = function(fromURL, toURL) {
-		const key = `${fromURL.componentRef}/${fromURL.variable}`
+	const _registerPairedProperty = function(fromURL, toURL) {
+		const key = `${fromURL.componentRef}/${fromURL.property}`
 
-		if (!_variableToURLsContains(key, toURL)) {
-			_addUrlToVariable(fromURL, toURL)
-			_notifyAboutOtherPairedVariables(fromURL, toURL)
+		if (!_propertyToURLsContains(key, toURL)) {
+			_addUrlToProperty(fromURL, toURL)
+			_notifyAboutOtherPairedProperties(fromURL, toURL)
 		}
 	}
 
@@ -715,40 +715,40 @@ const LiquidPeerConnection = (function() {
 	 * Unregisters the previsouly paired varible. Executed 
 	 * when on other peer unregisters itself.
 	 */
-	const _unregisterPairedVariable = function(fromURL, toURL) {
+	const _unregisterPairedProperty = function(fromURL, toURL) {
 		if(debug)console.log(`_unregister fromUrl:${JSON.stringify(fromURL)} toURL:${JSON.stringify(toURL)}`)
-		_removeVariableFromVarToURLs(toURL, fromURL)
-		const emitter = __liquidURLToEmitter.get(`${toURL.device}/${toURL.componentRef}/${toURL.variable}`)
+		_removePropertyFromVarToURLs(toURL, fromURL)
+		const emitter = __liquidURLToEmitter.get(`${toURL.device}/${toURL.componentRef}/${toURL.property}`)
 		if (emitter) {
 			emitter.emitEvent('bind-disconnect', [fromURL])
 		} else {
-			console.error(`PROBLEM no emitter for: ${toURL.device}/${toURL.componentRef}/${toURL.variable}`)
+			console.error(`PROBLEM no emitter for: ${toURL.device}/${toURL.componentRef}/${toURL.property}`)
 		}
 	}
 
 	/**
 	 * Unregisters the previsouly paired varible. Executed 
-	 * when we remove the variable ourself locally.
+	 * when we remove the property ourself locally.
 	 */
-	const _unregisterLocalPairedVariable = function(variableURL) {
-		if(debug)console.log(`_unregisterLocal varURL:${JSON.stringify(variableURL)}`)
-		_removeURLFromVarToURLs(variableURL)
+	const _unregisterLocalPairedProperty = function(propertyURL) {
+		if(debug)console.log(`_unregisterLocal varURL:${JSON.stringify(propertyURL)}`)
+		_removeURLFromVarToURLs(propertyURL)
 	}
 
 	/**
-	 * Notify toURL about other previously paired variables
+	 * Notify toURL about other previously paired properties
 	 * 
 	 * @param  {[type]} fromURL [description]
 	 * @param  {[type]} toURL   [description]
 	 * @return {[type]}         [description]
 	 */
-	const _notifyAboutOtherPairedVariables = function(fromURL, toURL) {
-		const key = `${fromURL.componentRef}/${fromURL.variable}`
+	const _notifyAboutOtherPairedProperties = function(fromURL, toURL) {
+		const key = `${fromURL.componentRef}/${fromURL.property}`
 		let message = {
-			operation: 'otherPairedVariables',
+			operation: 'otherPairedProperties',
 			from: fromURL,
 			to: toURL,
-			pairedVariables: __variableToURLs[key]
+			pairedProperties: __propertyToURLs[key]
 		}
 		Liquid.sendMessage(toURL, message)
 	}
@@ -770,15 +770,15 @@ const LiquidPeerConnection = (function() {
 		return false
 	}
 
-	const _variableToURLsContains = function(key, url) {
-		if (!__variableToURLs[key]) {
+	const _propertyToURLsContains = function(key, url) {
+		if (!__propertyToURLs[key]) {
 			return false
 		}
 
-		for (let saved_url of __variableToURLs[key]) {
+		for (let saved_url of __propertyToURLs[key]) {
 			if (url.device == saved_url.device) {
 				if (url.componentRef == saved_url.componentRef) {
-					if (url.variable == saved_url.variable) {
+					if (url.property == saved_url.property) {
 						return true
 					}
 					// return true
@@ -789,33 +789,33 @@ const LiquidPeerConnection = (function() {
 	}
 
 	/**
-	 * Adds the given url to the __variableToURLs[]
+	 * Adds the given url to the __propertyToURLs[]
 	 * @param url	liquidURL
-	 * @param value	variable
+	 * @param value	property
 	 */
-	const _addUrlToVariable = function(url, value) {
-		const key = `${url.componentRef}/${url.variable}`
+	const _addUrlToProperty = function(url, value) {
+		const key = `${url.componentRef}/${url.property}`
 		// just a check to avoid adding multiple time the same
-		if (!_variableToURLsContains(key, value)) {
-			__variableToURLs[key] = __variableToURLs[key] || []
-			__variableToURLs[key].push(value)
+		if (!_propertyToURLsContains(key, value)) {
+			__propertyToURLs[key] = __propertyToURLs[key] || []
+			__propertyToURLs[key].push(value)
 		}
 	}
 
 	/**
-	 * Remove the item from __variableToURLs corresponding 
+	 * Remove the item from __propertyToURLs corresponding 
 	 * to the given url that match the given value.
 	 * @param url	liquidURL
 	 * @param value	liquidURL
 	 */
-	const _removeVariableFromVarToURLs = function(url, value) {
-		let key = `${url.componentRef}/${url.variable}`
-		let arr = __variableToURLs[key]
+	const _removePropertyFromVarToURLs = function(url, value) {
+		let key = `${url.componentRef}/${url.property}`
+		let arr = __propertyToURLs[key]
 		if (arr) {
 			arr.splice(arr.findIndex(function(el) {
 				if (value.device == el.device){
 					if(value.componentRef == el.componentRef) {
-						if (value.type == el.type && value.variable == el.variable){
+						if (value.type == el.type && value.property == el.property){
 							// console.warn(`value:${JSON.stringify(value)} ?= el:${JSON.stringify(el)} => true`)
 							return true
 						}
@@ -826,56 +826,56 @@ const LiquidPeerConnection = (function() {
 			}), 1)
 			/* make sure to delete any reference if the array is empty */
 			if (arr.length > 0){
-				__variableToURLs[key] = arr
+				__propertyToURLs[key] = arr
 			} else {
-				delete __variableToURLs[key]
+				delete __propertyToURLs[key]
 			}
 		} else {
-			const key = `${url.componentRef}/${url.variable}`
-			arr = __variableToURLs[key]
+			const key = `${url.componentRef}/${url.property}`
+			arr = __propertyToURLs[key]
 
 			if(debug)console.log(`TODO?: removeVarTO....  key: ${key}`)
-			if(debug)console.log(JSON.stringify(__variableToURLs))
+			if(debug)console.log(JSON.stringify(__propertyToURLs))
 		}
 	}
 
 	/**
-	 * Delete all items from __variableToURLs corresponding 
+	 * Delete all items from __propertyToURLs corresponding 
 	 * to the key made from the given url.
 	 * @param url	liquidURL
 	 */
 	const _removeURLFromVarToURLs = function(url) {
-		let key = `${url.componentRef}/${url.variable}`
+		let key = `${url.componentRef}/${url.property}`
 		if(debug)console.log(`_removeURLFromVarToURLs delete key:${key}`)
-		delete __variableToURLs[key]
+		delete __propertyToURLs[key]
 	}
 
-	const _pairOtherVariables = function(message) {
-		for (let url of message.pairedVariables) {
-			const key = `${message.to.componentRef}/${message.to.variable}`
+	const _pairOtherProperties = function(message) {
+		for (let url of message.pairedProperties) {
+			const key = `${message.to.componentRef}/${message.to.property}`
 			if (liquidUrlsAreEqual(url, message.to)){
 				/*
 				 * If this url is the current as we don't want to connect a 
-				 * variable with itself but save the other side to 
-				 * __variableToURLs if it isn't already saved
+				 * property with itself but save the other side to 
+				 * __propertyToURLs if it isn't already saved
 				 */
-				if ( !LiquidPeerConnection.variableToURLsContains(key, message.from)) {
-					LiquidPeerConnection.addUrlToVariable(message.to, message.from)
+				if ( !LiquidPeerConnection.propertyToURLsContains(key, message.from)) {
+					LiquidPeerConnection.addUrlToProperty(message.to, message.from)
 				}
 				continue
 			}
-			if (!LiquidPeerConnection.variableToURLsContains(key, url)) {
+			if (!LiquidPeerConnection.propertyToURLsContains(key, url)) {
 				let fromURL = message.to
 				
 				let msgFrom = {
 					from: fromURL,
 					to: url,
-					operation: 'pairFromVariable',
+					operation: 'pairFromProperty',
 				}
 				let msgTo = {
 					from: fromURL,
 					to: url,
-					operation: 'pairToVariable',
+					operation: 'pairToProperty',
 				}
 				
 				if(debug)console.log(`SENDING PAIR MESSAGES 1:${fromURL.device}/${fromURL.componentRef}  2:${url.device}/${url.componentRef}`)
@@ -883,7 +883,7 @@ const LiquidPeerConnection = (function() {
 				Liquid.sendMessage(url, msgTo)
 
 				if (!liquidUrlsAreEqual(fromURL, message.to)) {
-					LiquidPeerConnection.addUrlToVariable(fromURL.componentRef, message.to)
+					LiquidPeerConnection.addUrlToProperty(fromURL.componentRef, message.to)
 				}
 			}
 		}
@@ -1255,14 +1255,14 @@ const LiquidPeerConnection = (function() {
 		send: _send,
 		incomingYMessage: _incomingYMessage,
 		subscribe: _subscribe,
-		pairOtherVariables: _pairOtherVariables,
-		registerPairedVariable: _registerPairedVariable,
+		pairOtherProperties: _pairOtherProperties,
+		registerPairedProperty: _registerPairedProperty,
 		// should not be accessible from outside of LPC
-		// unregisterPairedVariable: _unregisterPairedVariable,
-		unregisterLocalPairedVariable: _unregisterLocalPairedVariable,
+		// unregisterPairedProperty: _unregisterPairedProperty,
+		unregisterLocalPairedProperty: _unregisterLocalPairedProperty,
 		relay: _relay,
-		variableToURLsContains: _variableToURLsContains,
-		addUrlToVariable: _addUrlToVariable,
+		propertyToURLsContains: _propertyToURLsContains,
+		addUrlToProperty: _addUrlToProperty,
 		strategyMessage: _strategyMessage,
 		isRoutingTableActive: _isRoutingTableActive,
 		updateRoutingTableMessage: _updateRoutingTableMessage,

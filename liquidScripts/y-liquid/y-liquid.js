@@ -86,7 +86,7 @@ Liquid.prototype.broadcast = function(message){
 };
 
 Liquid.prototype.globalChange = function(v, value) {
-  this.socket.emit('globalChange', {variable: v, value: value})
+  this.socket.emit('globalChange', {property: v, value: value})
 }
 
 if(window !== undefined){

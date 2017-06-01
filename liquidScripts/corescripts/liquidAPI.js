@@ -381,7 +381,7 @@ var Liquid = (function () {
 				}
 
 				const data = {
-					liquidStorage: _getComponent(fromURL).getLiquidVariablesValue()
+					liquidStorage: _getComponent(fromURL).getLiquidPropertiesValue()
 				}
 
 				message = _createMessage(fromURL, toURL, 'migrate', target, data)
@@ -401,7 +401,7 @@ var Liquid = (function () {
 				}
 
 				const data = {
-					liquidStorage: _getComponent(fromURL).getLiquidVariablesValue()
+					liquidStorage: _getComponent(fromURL).getLiquidPropertiesValue()
 				}
 
 				message = _createMessage(fromURL, toURL, 'fork', target, data)
@@ -430,7 +430,7 @@ var Liquid = (function () {
 				const data = {
 					liquidui: '',
 					isContainer: fromComponent._isContainerComponent(),
-					liquidStorage: fromComponent.getLiquidVariablesValue(),
+					liquidStorage: fromComponent.getLiquidPropertiesValue(),
 					liquidChildComponents: childComponents
 				}
 				message = _createMessage(fromURL, toURL, 'clone', target, data)
@@ -450,45 +450,45 @@ var Liquid = (function () {
 	}
 
 	var _pairComponent = function(fromURL, toURL) {
-		var variables = _getComponent(toURL).getLiquidVariablesList()
+		var properties = _getComponent(toURL).getLiquidPropertiesList()
 
-		for(var i in variables) {
-			var fromVariableURL = {
+		for(var i in properties) {
+			var fromPropertyURL = {
 				device: fromURL.device,
 				componentRef: fromURL.componentRef,
 				type: fromURL.type,
-				variable: i
+				property: i
 			}
 
-			var toVariableURL = {
+			var toPropertyURL = {
 				device: toURL.device,
 				componentRef: toURL.componentRef,
 				type: toURL.type,
-				variable: i
+				property: i
 			}
-			_pairVariable(toVariableURL, fromVariableURL)
+			_pairProperty(toPropertyURL, fromPropertyURL)
 		}
 	}
 
-	var _pairVariable = function(fromURL, toURL, liquidOptions) {
+	var _pairProperty = function(fromURL, toURL, liquidOptions) {
 		var messageFrom = {
 			from: fromURL,
 			to: toURL,
-			operation: 'pairFromVariable',
+			operation: 'pairFromProperty',
 			options: liquidOptions
 		}
 
 		var messageTo = {
 			from: fromURL,
 			to: toURL,
-			operation: 'pairToVariable',
+			operation: 'pairToProperty',
 			options: liquidOptions
 		}
 
 		_sendMessage(fromURL, messageFrom)
 		_sendMessage(toURL, messageTo)
 
-		// LiquidPeerConnection.registerPairedVariable(fromURL, toURL)
+		// LiquidPeerConnection.registerPairedProperty(fromURL, toURL)
 	}
 
 	// var notifyNewWindow = function(device, page, locals, pair, from) {
@@ -541,7 +541,7 @@ var Liquid = (function () {
 	// 	}
 	// }
 
-	// var executeVariable = function(v, value) {
+	// var executeProperty = function(v, value) {
 	// 	if(__executions[v] != undefined) {
 	// 		var f = __executions[v][2]
 
@@ -550,7 +550,7 @@ var Liquid = (function () {
 	// 	}
 	// }
 
-	// var onVariableChange = function(v,value) {
+	// var onPropertyChange = function(v,value) {
 	// 	socket.emit('change', {
 	// 		v: v,
 	// 		value: value
@@ -568,7 +568,7 @@ var Liquid = (function () {
 	// 	}
 
 	// 	__state[v] = tempValue
-	// 	onVariableChange(v, tempValue)
+	// 	onPropertyChange(v, tempValue)
 	// }
 
 	// var _get = function(v) {
@@ -1031,7 +1031,7 @@ var Liquid = (function () {
 					__state[v] = value
 
 					for(var w in __subscriptions[v]) {
-						__subscriptions[v][w].postVariable(v,value)
+						__subscriptions[v][w].postProperty(v,value)
 					}
 				}
 			})
@@ -1045,7 +1045,7 @@ var Liquid = (function () {
 				var device = data.device
 				var component = data.component
 				var componentType = data.componentType
-				var variable = data.variable
+				var property = data.property
 				var peersTable=[]
 
 
@@ -1066,10 +1066,10 @@ var Liquid = (function () {
 				var componentsList=[];
 				for(var c in __componentsSummary){
 					componentsList.push({component:__componentsSummary[c],
-						variables:_getComponent(__componentsSummary[c]).__liquidVariablesList})
+						properties:_getComponent(__componentsSummary[c]).__liquidPropertiesList})
 				}
 
-				if(device && component && variable) {
+				if(device && component && property) {
 					//TODO
 				} else if(device && component) {
 					//TODO
@@ -1281,13 +1281,13 @@ var Liquid = (function () {
 			case 'deleteComplete':
 				_incomingDeleteComponentComplete(message)
 				break;
-			case 'pairFromVariable':
+			case 'pairFromProperty':
 				// console.warn('pair FROM from:'+ message.from.device+' to:'+message.to.device)
-				_incomingPairFromVariable(message)
+				_incomingPairFromProperty(message)
 				break;
-			case 'pairToVariable':
+			case 'pairToProperty':
 				// console.warn('pair TO from:'+message.from.device+' to:'+message.to.device)
-				_incomingPairToVariable(message)
+				_incomingPairToProperty(message)
 				break;
 			case 'requestAsset':
 				_incomingRequestAsset(message)
@@ -1327,8 +1327,8 @@ var Liquid = (function () {
 			case 'pingTestReply2':
 				LiquidPeerConnection.pingTestReply(message)
 				break;
-			case 'otherPairedVariables':
-				LiquidPeerConnection.pairOtherVariables(message)
+			case 'otherPairedProperties':
+				LiquidPeerConnection.pairOtherProperties(message)
 				break;
 			case 'relay':
 				LiquidPeerConnection.relay(message)
@@ -1654,20 +1654,20 @@ var Liquid = (function () {
 		delete __waitingPromises[message.promiseToken]
 	}
 
-	var _incomingPairFromVariable = function(message) {
+	var _incomingPairFromProperty = function(message) {
 		var messageFrom = message.from
 		var messageTo = message.to
 
-		_getComponent(messageFrom).pairVariableOutgoing(messageFrom, messageTo)
-		LiquidPeerConnection.registerPairedVariable(messageFrom, messageTo)
+		_getComponent(messageFrom).pairPropertyOutgoing(messageFrom, messageTo)
+		LiquidPeerConnection.registerPairedProperty(messageFrom, messageTo)
 	}
 
-	var _incomingPairToVariable = function(message) {
+	var _incomingPairToProperty = function(message) {
 		var messageFrom = message.from
 		var messageTo = message.to
 
-		_getComponent(messageTo).pairVariableIncoming(messageFrom, messageTo)
-		LiquidPeerConnection.registerPairedVariable(messageTo, messageFrom)
+		_getComponent(messageTo).pairPropertyIncoming(messageFrom, messageTo)
+		LiquidPeerConnection.registerPairedProperty(messageTo, messageFrom)
 	}
 
 	var _incomingYMessage = function(message) {
@@ -1677,7 +1677,7 @@ var Liquid = (function () {
 	}
 
 
-	// var _registerVariable = function(componentURL, variable) {
+	// var _registerProperty = function(componentURL, property) {
 	// 	if(componentURL.device == __deviceId) {
 
 	// 	} else {
@@ -1767,7 +1767,7 @@ var Liquid = (function () {
 								if(savedComp.type != 'migrate') {
 									var createAndPopulate = _loadAndCreateComponent(savedComp.type, document.querySelector('body'), savedComp.options)
 										.then(function(component){
-											component._populateStorage(savedComp.variables)
+											component._populateStorage(savedComp.properties)
 										}).then(function(){
 											index++
 											load(index)
@@ -1838,19 +1838,19 @@ var Liquid = (function () {
 
 	// }
 
-	// var _saveVariableState = function(label) {
+	// var _savePropertyState = function(label) {
 
 	// }
 
-	// var _loadVariableState = function(label) {
+	// var _loadPropertyState = function(label) {
 
 	// }
 
-	// var _getVariableState = function(label) {
+	// var _getPropertyState = function(label) {
 
 	// }
 
-	// var _getAllVariableState = function() {
+	// var _getAllPropertyState = function() {
 
 	// }
 
@@ -2043,8 +2043,8 @@ var _getSpatial = function() {
 		cloneAndHideComponent: _cloneAndHideComponent,
 		pairComponent: _pairComponent,
 
-		// Variable API
-		pairVariable: _pairVariable,
+		// Property API
+		pairProperty: _pairProperty,
 
 		// Persistence API
 		saveDeviceState: _saveDeviceState,
@@ -2055,10 +2055,10 @@ var _getSpatial = function() {
 		// loadComponentState: _loadComponentState,
 		// getAllComponentState: _getAllComponentState,
 		// getComponentState: _getComponentState,
-		// saveVariableState: _saveVariableState,
-		// loadVariableState: _loadVariableState,
-		// getAllVariableState: _getAllVariableState,
-		// getVariableState: _getVariableState,
+		// savePropertyState: _savePropertyState,
+		// loadPropertyState: _loadPropertyState,
+		// getAllPropertyState: _getAllPropertyState,
+		// getPropertyState: _getPropertyState,
 
 		createMessage: _createMessage,
 
