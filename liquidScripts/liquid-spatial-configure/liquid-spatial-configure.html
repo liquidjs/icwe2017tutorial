@@ -1096,11 +1096,13 @@
             this.$.shareNow.classList.add('green')
             this.showShareBtn = true;
             Liquid.triggerSpatialEvent('showUI')
+            Liquid.setUIProperty('showUI', true)
           } else {
             this.$.shareNow.classList.remove('green')
             this.$.shareNow.classList.add('red')
             this.showShareBtn = false;
             Liquid.triggerSpatialEvent('hideUI')
+            Liquid.setUIProperty('showUI', false)
           }
         },
 

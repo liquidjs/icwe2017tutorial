@@ -130,8 +130,8 @@ var Liquid = (function () {
 	/**
 	* SANI Thesis attributes
 	*/
-
 	var __spatialReference = undefined
+	var __liquidUIProperties = {}
 
 	var _checkDevice = function() {
 		var md = new MobileDetect(window.navigator.userAgent)
@@ -2014,6 +2014,15 @@ var _getSpatial = function() {
 		__liquidComponentUrl
 	}
 
+	var _setUIProperty = function(name, value) {
+		__liquidUIProperties[name] = value
+	}
+
+	var _getUIProperty = function(name) {
+		return __liquidUIProperties[name]
+	}
+
+
 
 	return {
 		configure: _create,
@@ -2092,6 +2101,9 @@ var _getSpatial = function() {
 		registerSpatial: _registerSpatial,
 		triggerSpatialEvent: _triggerSpatialEvent,
 		triggerUIEvent: _triggerUIEvent,
+		setUIProperty: _setUIProperty,
+		getUIProperty: _getUIProperty,
+
 
 		createUniqueId: _createUniqueId,
 		getSpatial: _getSpatial,

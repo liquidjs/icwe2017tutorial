@@ -311,6 +311,9 @@
         Liquid.addEventListener('spatial-hideUI', (this.hideUIBtn).bind(this))
         Liquid.addEventListener('UI-draggedBtn', (this.setDraggedBtn).bind(this))
         Liquid.addEventListener('UI-droppedBtn', (this.resetDraggedBtn).bind(this))
+        if(Liquid.getUIProperty('showUI')) {
+          this.showUIBtn()
+        }
       },
 
       detached: function() {
