@@ -35,7 +35,7 @@
     "polymer": "Polymer/polymer#^1.6.0",
     "paper-menu-button": "PolymerElements/paper-menu-button#^1.1.0",
     "mobile-detect": "hgoebl/mobile-detect.js#^1.3.2",
-    "pouchdb": "^5.4.3",
+    "pouchdb": "5.4.5",
     "app-pouchdb": "PolymerElements/app-pouchdb#^0.9.1",
     "pouchdb-find": "^0.10.2",
     "bower": "*",
@@ -48,11 +48,11 @@
     "paper-dialog": "PolymerElements/paper-dialog#^1.1.0",
     "paper-button": "PolymerElements/paper-button#^1.0.13",
     "paper-dialog-scrollable": "PolymerElements/paper-dialog-scrollable#^1.1.5",
-    "yjs": "^11.0.4",
+    "yjs": "11.2.6",
     "y-memory": "8.0.5",  
-    "y-map": "^9.0.0",
-    "y-text": "^9.0.0",
-    "y-array": "^9.0.1",
+    "y-map": "9.0.0",
+    "y-text": "9.0.0",
+    "y-array": "9.0.3",
     "paper-listbox": "^1.1.2",
     "paper-tabs": "^1.7.0",
     "iron-a11y-keys": "PolymerElements/iron-a11y-keys#^1.0.6",
@@ -71,6 +71,9 @@
     "codemirror": "^5.25.2"
   },
   "resolutions": {
-    "iron-icons": "^1.2.0"
+    "iron-icons": "^1.2.0",
+    "yjs": "11.2.6",
+    "y-array": "9.0.3",
+    "pouchdb": "6.2.0"
   }
 }
