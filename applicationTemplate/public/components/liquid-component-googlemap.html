@@ -10,13 +10,32 @@
     }
   </style>
   <template>
-    <!-- API KEY: AIzaSyAFj7qH5ub0o-wT-ecPalLQcQZRQrBh11M -->
+    <google-map
+      api-key="AIzaSyAFj7qH5ub0o-wT-ecPalLQcQZRQrBh11M"
+      map="{{map}}"
+      latitude="{{latitude}}"
+      longitude="{{longitude}}"
+      zoom="{{zoom}}">
+    </google-map>
+
+    <google-map-directions 
+      api-key="AIzaSyAFj7qH5ub0o-wT-ecPalLQcQZRQrBh11M"
+      map="{{map}}"
+      start-address="{{location1}}"
+      end-address="{{location2}}">
+    </google-map-directions>
   </template>
   <script>
     Polymer({
       is: 'liquid-component-googlemap',
 
-      properties: {},
+      properties: {
+        latitude: 37,
+        longitude: -122,
+        zoom: 15,
+        location1: '',
+        location2: ''
+      },
     });
   </script>
 </dom-module>
