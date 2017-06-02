@@ -17,6 +17,9 @@ After you checkout the folder you have to install the dependencies. The automati
 Once you installed bower:	
 	
 	npm install
+	
+Finally you can start liquid.js
+	
 	npm start
 
 ---
