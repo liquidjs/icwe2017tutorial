@@ -1,7 +1,11 @@
 let load = function() {
-	console.log('Working')
-
 	let liquidOptions = {
+		host: 'localhost',
 		port: 8888
 	}
+
+	Liquid.configure(liquidOptions)
+	.then(function(){
+		return Liquid.createComponent('migrate')
+	})
 }
