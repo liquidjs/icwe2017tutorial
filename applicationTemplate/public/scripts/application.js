@@ -7,5 +7,9 @@ let load = function() {
 	Liquid.configure(liquidOptions)
 	.then(function(){
 		return Liquid.createComponent('migrate')
+	}).then(function(){
+		return Liquid.loadComponent('logo')
+	}).then(function(){
+		return Liquid.createComponent('logo')
 	})
 }
