@@ -17,14 +17,19 @@ var load = function() {
   	Liquid.triggerUIEvent('handChange');
   });
 
-	Liquid.configure(liquidConfig)
-	.then(function(){
-    Liquid.setUsername('h')
-		return Liquid.loadComponent('card')
-	}).then(function(){
-		// Liquid.createComponent('card', document.querySelector('#container'), {bindings: {
-  //     view: 'back',
-  //     card: 'card spades rank13'
-  //   }})
-	})
+  var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1
+  if (is_chrome == true) {
+    Liquid.configure(liquidConfig)
+    .then(function(){
+      Liquid.setUsername('h')
+    	return Liquid.loadComponent('card')
+    }).then(function(){
+    	// Liquid.createComponent('card', document.querySelector('#container'), {bindings: {
+    //     view: 'back',
+    //     card: 'card spades rank13'
+    //   }})
+    })
+  } else {
+    alert("Please use Google Chrome")
+  }
 }

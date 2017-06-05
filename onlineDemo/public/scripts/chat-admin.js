@@ -16,22 +16,27 @@ var load = function() {
   	}
   });
 
-	Liquid.configure(liquidConfig)
-	.then(function() {
-		return Liquid.createComponent('spatial-configure', document.querySelector('.toolbar'), {})
-	})
-	.then(function(){
-		return Liquid.loadAndCreateComponent('chat', document.querySelector('.verticalContainer'), {'liquidui': 'spatial1'})
-	}).then(function(){
-		document.querySelector('.buttons').style.display = 'flex'
-	})
+  var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1
+  if (is_chrome == true) {
+		Liquid.configure(liquidConfig)
+		.then(function() {
+			return Liquid.createComponent('spatial-configure', document.querySelector('.toolbar'), {})
+		})
+		.then(function(){
+			return Liquid.loadAndCreateComponent('chat', document.querySelector('.verticalContainer'), {'liquidui': 'spatial1'})
+		}).then(function(){
+			document.querySelector('.buttons').style.display = 'flex'
+		})
 
-	var randomNumber = Math.floor(Math.random() * (1000000 - 0)) + 0;
-	document.querySelector('#nickname').value = 'guest' + randomNumber
+		var randomNumber = Math.floor(Math.random() * (1000000 - 0)) + 0;
+		document.querySelector('#nickname').value = 'guest' + randomNumber
 
-	document.querySelector('#addChat').addEventListener("click", function(){
-		Liquid.loadAndCreateComponent('chat', document.querySelector('.verticalContainer'), {'liquidui': 'spatial1'})
-	})
+		document.querySelector('#addChat').addEventListener("click", function(){
+			Liquid.loadAndCreateComponent('chat', document.querySelector('.verticalContainer'), {'liquidui': 'spatial1'})
+		})
+	} else {
+    alert("Please use Google Chrome")
+	}
 }
 
 var getNickname = function() {
