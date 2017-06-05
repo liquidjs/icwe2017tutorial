@@ -584,6 +584,8 @@ var Liquid = (function () {
 		__user = name
 		__username = name
 		__socket.emit('username', {name: name})
+
+		_runEvent('usernameChange', [__username])
 	}
 
 	var _create = function(opts, messageRouting) {

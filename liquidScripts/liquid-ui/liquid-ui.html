@@ -63,6 +63,10 @@
         --paper-input-container-invalid-color: black;
         --paper-input-container-input-color: black;
       }
+
+      .operation-option {
+        width: 60px;
+      }
     </style>
   <template>
     <div id="application">
@@ -123,7 +127,7 @@
               <template is="dom-if" if="{{isNotThisDevice(item)}}">
                 <paper-item class="titleItem" disabled>
                   <paper-icon-button disabled icon="{{typeToIcon(item.type)}}"></paper-icon-button>
-                  <paper-item disabled>{{item.username}}</paper-item>
+                  <paper-item disabled>{{getUsername(item)}}</paper-item>
                 </paper-item>
                 <paper-item class="operation-wrapper">
                   <div class="operation-option" data-operation="migrate" data-identifier$="{{item.id}}" on-click="onOperation">Migrate</div>

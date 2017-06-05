@@ -453,7 +453,7 @@
           operation: this.getOperation(tappedNode, nodeZone),
           fromURL: this.liquidCOmponentURl,
           fromUI: this.liquiduiType,
-          fromState: this.parentNode.getLiquidVariablesValue(),
+          fromState: this.parentNode.getLiquidPropertiesValue(),
           isContainer: this.parentNode._isContainerComponent(),
           childComponents: this.parentNode._getLiquidChildComponents(),
           target: '.verticalContainer'
@@ -535,7 +535,7 @@
           operation: this.getOperation(dropArea, nodeZone), // TODO: fork migrate for different operation and tag
           fromURL: this.liquidCOmponentURl,
           fromUI: this.liquiduiType,
-          fromState: this.parentNode.getLiquidVariablesValue(),
+          fromState: this.parentNode.getLiquidPropertiesValue(),
           isContainer: this.parentNode._isContainerComponent(),
           childComponents: this.parentNode._getLiquidChildComponents(),
           target: '.verticalContainer'

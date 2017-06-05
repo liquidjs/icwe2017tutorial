@@ -65,7 +65,7 @@
         // var a = [{id: '_liquidBroadcast', username: 'Broadcast'}]
         var a = []
         for(var d in  devicesInfo) {
-          a.push({id: d, username: d, type: devicesInfo[d]})
+          a.push({id: d, username: this.devices[d] ? this.devices[d] : d, type: devicesInfo[d]})
         }
 
         return a
@@ -260,6 +260,10 @@
         }
 
         return this.liquidComponentType
+      },
+
+      getUsername: function(item) {
+        return item.username
       }
     };
 </script>

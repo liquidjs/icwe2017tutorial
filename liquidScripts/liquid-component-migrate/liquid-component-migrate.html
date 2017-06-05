@@ -2,6 +2,7 @@
 
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="/paper-input/paper-input.html">
 
 <dom-module id="liquid-component-migrate">
   <style is="custom-style">
@@ -108,8 +109,13 @@
     <paper-toolbar id="toolbar">
       <paper-spinner id="spinner"></paper-spinner>
       <paper-icon-button id="connectionState" icon="communication:call-end" style="color:red;"></paper-icon-button>
-      <iron-icon id="showList" icon="icons:expand-more" on-click="toggleToolbar"></iron-icon>
+<!--       <iron-icon id="showList" icon="icons:expand-more" on-click="toggleToolbar"></iron-icon> -->
       <span>{{deviceId}}</span>
+
+      <span class="flex"></span>
+
+      <paper-icon-button icon="icons:create" on-click="setUsername" style="color:white;"></paper-icon-button>
+      <paper-input id="usernameInput" label="Change username" value=""></paper-input>
 
       <span class="flex"></span>
 
@@ -191,6 +197,7 @@
       },
 
       attached: function() {
+        Liquid.addEventListener('usernameChange', this.showUsername.bind(this))
         Liquid.addEventListener('loadingChange', this.toggleSpinner.bind(this))
         Liquid.addEventListener('connect', this.connectedDevice.bind(this))
         Liquid.addEventListener('disconnect', this.toggleConnectButtonOff.bind(this))
@@ -204,9 +211,15 @@
         if(Liquid.getConnectionState()) {
           this.toggleConnectButtonOn()
         }
+
+        var username = window.sessionStorage.getItem("liquidjs_ui_username")
+        if(username) {
+          Liquid.setUsername(username)
+        }
       },
 
       detached: function() {
+        Liquid.removeEventListener('usernameChange', this.showUsername.bind(this))
         Liquid.removeEventListener('loadingChange', this.toogleSpinner)
         Liquid.removeEventListener('connect', this.connectedDevice)
         Liquid.removeEventListener('disconnect', this.toggleConnectButtonOff)
@@ -411,6 +424,20 @@
       toggleConnectButtonOn: function () {
         this.$.connectionState.icon = 'communication:call'
         this.$.connectionState.style.color = 'green'
+      },
+
+      setUsername: function() {
+        var username = this.$.usernameInput.value
+        if(username) {
+          Liquid.setUsername(username)
+          window.sessionStorage.setItem("liquidjs_ui_username", username)
+
+          this.$.usernameInput.value = ""
+        }
+      },
+
+      showUsername: function(username) {
+        this.deviceId = username
       }
     });
   </script>

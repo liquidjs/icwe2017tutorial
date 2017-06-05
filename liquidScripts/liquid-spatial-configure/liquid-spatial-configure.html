@@ -729,7 +729,7 @@
               <template id="subTemplateDevices" is="dom-if" if="{{addNew(device)}}">
                 <div id="{{idToName(device)}}" data-id$="{{device}}" data-index$="{{index}}" on-mouseover="nodeOver" on-mouseout="nodeOut" on-touchstart="showInfos" draggable="{{isAdmin(deviceId)}}" on-dragstart="dragStart" class$="{{setNodeClass(device)}}">
                     {{getDeviceUsername(device, devicesListTemp)}}
-                <iron-icon id="{{idToTypeIcon(device)}}" class$="{{setIconClass(device)}}" icon="{{getDeviceIcon(device)}}">
+               <!--  <iron-icon id="{{idToTypeIcon(device)}}" class$="{{setIconClass(device)}}" icon="{{getDeviceIcon(device)}}"> -->
                 </iron-icon></div>
                 <paper-tooltip class="customToolTip" style="marigin-left:-15px" fit-to-visible-bounds="true" offset="1" for="{{idToName(device)}}">type: {{getDeviceType(device)}}</paper-tooltip>
                 <div class="alert">

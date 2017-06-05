@@ -10,6 +10,8 @@
       --paper-input-container-focus-color: black;
   }
 
+
+
   #test {
     height: 40px;
     width: 40px;
@@ -402,7 +404,7 @@
           operation: this.getOperation(dropArea, nodeZone), // TODO: fork migrate for different operation and tag
           fromURL: this.liquidCOmponentURl,
           fromUI: this.liquiduiType,
-          fromState: this.parentNode.getLiquidVariablesValue(),
+          fromState: this.parentNode.getLiquidPropertiesValue(),
           isContainer: this.parentNode._isContainerComponent(),
           childComponents: this.parentNode._getLiquidChildComponents()
         }
