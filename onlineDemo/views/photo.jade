@@ -16,6 +16,7 @@ html
 			}
 
 			paper-card {
+				margin-top: 10px;
 				width:380px;
 				background-color: #1e88e5;
 			}
@@ -32,7 +33,6 @@ html
 			}
 
 			paper-button.dark-highlight {
-				margin-top: auto;
 				background-color: #4E5A6B;
 				color: white;
 			}
@@ -78,7 +78,7 @@ html
 				width: 50%;
 			}
 
-			paper-toolbar {
+			#toolbar {
 				width:80%;
 				margin:auto;
 				background-color: #1e88e5;
@@ -88,23 +88,34 @@ html
 				margin:auto;
 			}
 
+			li {
+				text-align: justify;
+				margin-top: 0.5em;
+			}
+
+			.toolbar-link {
+				margin-top: 5px;
+				margin-bottom: 5px;
+				width: 200px;
+			}
+
 		title.
 			Welcome
 
 	body
-		paper-toolbar
+		div#toolbar.container
 			div.center
 				a(href="/")
-					paper-button.dark-highlight.
+					paper-button.dark-highlight.toolbar-link.
 						Card game
 				a(href="/photo")
-					paper-button.dark-highlight.
+					paper-button.dark-highlight.toolbar-link.
 						Photo Filtering
 				a(href="/chat")
-					paper-button.dark-highlight.
+					paper-button.dark-highlight.toolbar-link.
 						Chat Migration
 				a(href="/editor")
-					paper-button.dark-highlight.
+					paper-button.dark-highlight.toolbar-link.
 						Editor
 
 		div.container
@@ -150,6 +161,28 @@ html
 						Liquid.js is built on Polymer, WebRTC and Yjs.
 
 					img.devices(src="images/liquidDevices.png")
+
+					h1.
+						Publications
+
+					ul
+						li.
+							Andrea Gallidabino, <strong>Migrating and Pairing Recursive Stateful Components Between Multiple Devices with Liquid.js for Polymer</strong>, 16th International Conference on Web Engineering (ICWE 2016), Switzerland, Italy, Springer, May, 2016 
+						li.
+							Andrea Gallidabino, and Cesare Pautasso, <strong>Deploying Stateful Web Components on Multiple Devices with Liquid.js for Polymer</strong>, 19th International ACM Sigsoft Symposium on Component-Based Software Engineering (CBSE 2016), Venice, Italy, pp. 85-90, April, 2016
+						li.
+							Andrea Gallidabino, and Cesare Pautasso, <strong>The Liquid.js Framework for Migrating and Cloning Stateful Web Components across Multiple Devices</strong>, Proc. of the 25th International World Wide Web conference (WWW 2016), Montreal, Canada, ACM, pp. 183-186, April, 2016
+
+					h1.
+						Liquid software publications by us
+
+					ul
+						li.
+							Andrea Gallidabino, Cesare Pautasso, Ville Ilvonen, Tommi Mikkonen, Kari Systa, Jari-Pekka Voutilainen, and Antero Taivalsaari, <strong>Architecting Liquid Software</strong>, Journal of Web Engineering, In press, 2017.
+						li.
+							Andrea Gallidabino, and Cesare Pautasso, <strong>Maturity Model for Liquid Web Architectures</strong>, 17th International Conference on Web Engineering (ICWE 2017), Rome, Italy, Springer, June, 2017.
+						li.
+							Andrea Gallidabino, Cesare Pautasso, Ville Ilvonen, Tommi Mikkonen, Kari Systa, Jari-Pekka Voutilainen, and Antero Taivalsaari, <strong>On the Architecture of Liquid Software: Technology Alternatives and Design Space</strong>, 13th Working IEEE/IFIP Conference on Software Architecture (WICSA 2016), Venice, Italy, April, 2016
 
 		<!-- Piwik -->
 		script(type="text/javascript").
