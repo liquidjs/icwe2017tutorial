@@ -1,6 +1,7 @@
 # Liquid.js Tutorial steps
 
-###Make sure your project works
+
+###	Make sure your project works
 	
 1. 	Download the repository from: [https://github.com/liquidjs/icwe2017tutorial](https://github.com/liquidjs/icwe2017tutorial) 
 2. 	Install the dependencies:
@@ -25,11 +26,11 @@
 	
 6.	If everything is working correctly then you should see the Liquid.js Logo in the homepage
 
---
+---
 
-###Create your first liquid component
+###	Create your first liquid component
 	
-####File: "/applicationTemplate/public/components/liquid-component-text"
+####	File: "/applicationTemplate/public/components/liquid-component-text"
 	
 1.	Make sure that the _component id_ and the _is_ property are the same as the file name "liquid-component-text"
 	
@@ -70,7 +71,7 @@
 		value: "Hello World", // Initial value of the property
 		liquid: true          // Makes a property liqiud
 	}
-```
+	```
 	
 8.	Bind the property you created to the value property of the paper-input element we previously created.
 	
@@ -80,11 +81,11 @@
 	
 9.	Enjoy your first liquid element in the browser
 
---
+---
 
-### Loading your first liquid component by using the componentAPI
+###	Loading your first liquid component by using the componentAPI
 
-####File: "/applicationTemplate/public/scripts/applications.js"
+####	File: "/applicationTemplate/public/scripts/applications.js"
 	
 1.	In this file you will find some code.
 		
@@ -97,7 +98,7 @@
 		}).then(function(){
 			return Liquid.createComponent('logo')
 		})
-```
+	```
 		
 	It configures the Liquid library, it creates the top toolbar you see in the webpage, it loads the assets of the **liquid-component-logo** component and creates an instance of it. This code makes use of Promises.
 		
@@ -131,11 +132,11 @@
 	
 7.	Enjoy your result in your browser.
 
---
+---
 
-### Create the googlemap component
+###	Create the googlemap component
 
-####File: "/applicationTemplate/public/components/liquid-component-googlemap.html"
+####	File: "/applicationTemplate/public/components/liquid-component-googlemap.html"
 	
 1.	Add the needed imports:
 	
